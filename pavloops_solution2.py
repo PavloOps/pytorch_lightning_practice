@@ -53,7 +53,7 @@ class AugmentationConfig:
 
 @dataclass
 class DataConfig:
-    data_dir: str = os.getenv("DATA_DIR")
+    data_dir: str = './'
     train_url: str = 'https://github.com/a-milenkin/ml_instruments/raw/refs/heads/main/data/sign_mnist_train.csv.zip'
     test_url: str = 'https://github.com/a-milenkin/ml_instruments/raw/refs/heads/main/data/sign_mnist_test.csv.zip'
     train_hash: str = '4c2897f19fab2b0ae2a7e4fa82e969043315d9f3a1a9cc0948b576bf1189a7e5'
@@ -72,7 +72,7 @@ class ModelConfig:
     kernel_size_block2: int = 3
     padding_block1: int = 1
     padding_block2: int = 1
-    weights_file_name: str = os.getenv("WEIGHTS_FILE_NAME")
+    weights_file_name: str = 'model_weights.ckpt'
 
 
 @dataclass
