@@ -1,0 +1,11 @@
+pandas==2.2.3
+numpy==2.2.1
+matplotlib==3.10.1
+torch==2.6.0
+dotenv==0.9.9
+python-dotenv==1.0.1
+torchvision==0.21.0
+lightning==2.5.0.post0
+pytorch-lightning==2.5.0.post0
+torchview==0.2.6
+click==8.1.8
