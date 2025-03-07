@@ -1,6 +1,6 @@
-(.venv) (base) 06.03 14:20:24 pavloops@mur:~/PycharmProjects/ClearML_Pytorch_Lightening/lab2_pytorch_lightening$ python pavloops_solution2.py --fast_dev_run
-[2025-Mar-06 14:20:37] INFO: Convolutional Neural Network Architecture is:
-MyConvNet(
+(.venv) (base) 07.03 10:36:43 pavloops@mur:~/PycharmProjects/ClearML_Pytorch_Lightening/lab2_pytorch_lightening$ python pavloops_solution2.py --fast_dev_run
+[2025-Mar-07 10:36:50] INFO: Convolutional Neural Network Architecture is:
+[2025-Mar-07 10:36:51] INFO: MyConvNet(
   (block1): Sequential(
     (0): Conv2d(1, 8, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
     (1): BatchNorm2d(8, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
@@ -19,51 +19,53 @@ MyConvNet(
   (lin2): Linear(in_features=100, out_features=25, bias=True)
   (criterion): CrossEntropyLoss()
 )
-[2025-Mar-06 14:20:38] INFO: Augmentation params are: AugmentationConfig(normalize_mean=159.0, normalize_std=40.0, random_horizontal_flip_p=0.1, random_rotation_degrees=(-180, 180), random_rotation_p=0.2)
+[2025-Mar-07 10:36:51] INFO: Augmentation params are: AugmentationConfig(normalize_mean=159.0, normalize_std=40.0, random_horizontal_flip_p=0.1, random_rotation_degrees=(-180, 180), random_rotation_p=0.2)
 Seed set to 2025
 GPU available: True (cuda), used: True
 TPU available: False, using: 0 TPU cores
 HPU available: False, using: 0 HPUs
 Running in `fast_dev_run` mode: will run the requested loop using 1 batch(es). Logging and checkpointing is suppressed.
---2025-03-06 14:20:38--  https://github.com/a-milenkin/ml_instruments/raw/refs/heads/main/data/sign_mnist_train.csv.zip
-Распознаётся github.com (github.com)… 140.82.121.4
-Подключение к github.com (github.com)|140.82.121.4|:443... соединение установлено.
+[2025-Mar-07 10:36:51] INFO: Start files' downloading:
+--2025-03-07 10:36:51--  https://github.com/a-milenkin/ml_instruments/raw/refs/heads/main/data/sign_mnist_train.csv.zip
+Распознаётся github.com (github.com)… 140.82.114.3
+Подключение к github.com (github.com)|140.82.114.3|:443... соединение установлено.
 HTTP-запрос отправлен. Ожидание ответа… 302 Found
 Адрес: https://raw.githubusercontent.com/a-milenkin/ml_instruments/refs/heads/main/data/sign_mnist_train.csv.zip [переход]
---2025-03-06 14:20:40--  https://raw.githubusercontent.com/a-milenkin/ml_instruments/refs/heads/main/data/sign_mnist_train.csv.zip
-Распознаётся raw.githubusercontent.com (raw.githubusercontent.com)… 185.199.108.133, 185.199.110.133, 185.199.109.133, ...
-Подключение к raw.githubusercontent.com (raw.githubusercontent.com)|185.199.108.133|:443... соединение установлено.
+--2025-03-07 10:36:53--  https://raw.githubusercontent.com/a-milenkin/ml_instruments/refs/heads/main/data/sign_mnist_train.csv.zip
+Распознаётся raw.githubusercontent.com (raw.githubusercontent.com)… 185.199.111.133, 185.199.110.133, 185.199.109.133, ...
+Подключение к raw.githubusercontent.com (raw.githubusercontent.com)|185.199.111.133|:443... соединение установлено.
 HTTP-запрос отправлен. Ожидание ответа… 200 OK
 Длина: 24485575 (23M) [application/zip]
-Сохранение в: ‘/home/pavloops/PycharmProjects/ClearML_Pytorch_Lightening/lab2_pytorch_lightening/train.csv.zip’
+Сохранение в: ‘./raw_data/train.csv.zip’
 
-/home/pavloops/PycharmProjects/ClearML_Pytorch_Lighteni 100%[============================================================================================================================>]  23,35M  1,48MB/s    за 12s
+./raw_data/train.csv.zip                                100%[============================================================================================================================>]  23,35M  1,58MB/s    за 17s
 
-2025-03-06 14:20:53 (1,95 MB/s) - ‘/home/pavloops/PycharmProjects/ClearML_Pytorch_Lightening/lab2_pytorch_lightening/train.csv.zip’ сохранён [24485575/24485575]
+2025-03-07 10:37:12 (1,35 MB/s) - ‘./raw_data/train.csv.zip’ сохранён [24485575/24485575]
 
-Archive:  /home/pavloops/PycharmProjects/ClearML_Pytorch_Lightening/lab2_pytorch_lightening/train.csv.zip
-  inflating: /home/pavloops/PycharmProjects/ClearML_Pytorch_Lightening/lab2_pytorch_lightening/sign_mnist_train.csv
-  inflating: /home/pavloops/PycharmProjects/ClearML_Pytorch_Lightening/lab2_pytorch_lightening/__MACOSX/._sign_mnist_train.csv
---2025-03-06 14:20:54--  https://github.com/a-milenkin/ml_instruments/raw/refs/heads/main/data/sign_mnist_test.csv.zip
-Распознаётся github.com (github.com)… 140.82.121.4
-Подключение к github.com (github.com)|140.82.121.4|:443... соединение установлено.
+Archive:  ./raw_data/train.csv.zip
+  inflating: ./raw_data/sign_mnist_train.csv
+  inflating: ./raw_data/__MACOSX/._sign_mnist_train.csv
+[2025-Mar-07 10:37:13] INFO: Start files' downloading:
+--2025-03-07 10:37:13--  https://github.com/a-milenkin/ml_instruments/raw/refs/heads/main/data/sign_mnist_test.csv.zip
+Распознаётся github.com (github.com)… 140.82.114.3
+Подключение к github.com (github.com)|140.82.114.3|:443... соединение установлено.
 HTTP-запрос отправлен. Ожидание ответа… 302 Found
 Адрес: https://raw.githubusercontent.com/a-milenkin/ml_instruments/refs/heads/main/data/sign_mnist_test.csv.zip [переход]
---2025-03-06 14:20:55--  https://raw.githubusercontent.com/a-milenkin/ml_instruments/refs/heads/main/data/sign_mnist_test.csv.zip
-Распознаётся raw.githubusercontent.com (raw.githubusercontent.com)… 185.199.108.133, 185.199.110.133, 185.199.109.133, ...
-Подключение к raw.githubusercontent.com (raw.githubusercontent.com)|185.199.108.133|:443... соединение установлено.
+--2025-03-07 10:37:14--  https://raw.githubusercontent.com/a-milenkin/ml_instruments/refs/heads/main/data/sign_mnist_test.csv.zip
+Распознаётся raw.githubusercontent.com (raw.githubusercontent.com)… 185.199.111.133, 185.199.110.133, 185.199.109.133, ...
+Подключение к raw.githubusercontent.com (raw.githubusercontent.com)|185.199.111.133|:443... соединение установлено.
 HTTP-запрос отправлен. Ожидание ответа… 200 OK
 Длина: 6358185 (6,1M) [application/zip]
-Сохранение в: ‘/home/pavloops/PycharmProjects/ClearML_Pytorch_Lightening/lab2_pytorch_lightening/test.csv.zip’
+Сохранение в: ‘./raw_data/test.csv.zip’
 
-/home/pavloops/PycharmProjects/ClearML_Pytorch_Lighteni 100%[============================================================================================================================>]   6,06M  3,38MB/s    за 1,8s
+./raw_data/test.csv.zip                                 100%[============================================================================================================================>]   6,06M  1,11MB/s    за 5,4s
 
-2025-03-06 14:20:58 (3,38 MB/s) - ‘/home/pavloops/PycharmProjects/ClearML_Pytorch_Lightening/lab2_pytorch_lightening/test.csv.zip’ сохранён [6358185/6358185]
+2025-03-07 10:37:21 (1,11 MB/s) - ‘./raw_data/test.csv.zip’ сохранён [6358185/6358185]
 
-Archive:  /home/pavloops/PycharmProjects/ClearML_Pytorch_Lightening/lab2_pytorch_lightening/test.csv.zip
-  inflating: /home/pavloops/PycharmProjects/ClearML_Pytorch_Lightening/lab2_pytorch_lightening/sign_mnist_test.csv
-  inflating: /home/pavloops/PycharmProjects/ClearML_Pytorch_Lightening/lab2_pytorch_lightening/__MACOSX/._sign_mnist_test.csv
-[2025-Mar-06 14:21:01] INFO: Train is loaded to RAM.
+Archive:  ./raw_data/test.csv.zip
+  inflating: ./raw_data/sign_mnist_test.csv
+  inflating: ./raw_data/__MACOSX/._sign_mnist_test.csv
+[2025-Mar-07 10:37:25] INFO: Train is loaded to RAM.
 LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
 
   | Name      | Type             | Params | Mode
@@ -83,13 +85,13 @@ LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
 15        Modules in train mode
 0         Modules in eval mode
 `Trainer.fit` stopped: `max_steps=1` reached.
-[2025-Mar-06 14:21:01] INFO: Тестовый прогон успешно пройден
+[2025-Mar-07 10:37:26] INFO: Тестовый прогон успешно пройден
 GPU available: True (cuda), used: True
 TPU available: False, using: 0 TPU cores
 HPU available: False, using: 0 HPUs
-[2025-Mar-06 14:21:02] INFO: Train file already downloaded.
-[2025-Mar-06 14:21:02] INFO: Test file already downloaded.
-[2025-Mar-06 14:21:04] INFO: Train is loaded to RAM.
+[2025-Mar-07 10:37:27] INFO: Train file already downloaded.
+[2025-Mar-07 10:37:27] INFO: Test file already downloaded.
+[2025-Mar-07 10:37:29] INFO: Train is loaded to RAM.
 LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
 
   | Name      | Type             | Params | Mode
@@ -108,9 +110,9 @@ LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
 0.329     Total estimated model params size (MB)
 15        Modules in train mode
 0         Modules in eval mode
-Epoch 19: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 215/215 [00:04<00:00, 47.43it/s, v_num=0, train/loss=0.237]`Trainer.fit` stopped: `max_epochs=20` reached.
-Epoch 19: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 215/215 [00:04<00:00, 47.26it/s, v_num=0, train/loss=0.237]
+Epoch 19: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 172/172 [00:04<00:00, 39.12it/s, v_num=6, train/loss=0.258, valid/loss=0.263]`Trainer.fit` stopped: `max_epochs=20` reached.
+Epoch 19: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 172/172 [00:04<00:00, 38.98it/s, v_num=6, train/loss=0.258, valid/loss=0.263]
 Seed set to 2025
-[2025-Mar-06 14:22:32] INFO: Test is loaded to RAM.
-Fact: 21, Prediction: 21
-[2025-Mar-06 14:22:33] INFO: Process finished successfully.
+[2025-Mar-07 10:39:26] INFO: Test is loaded to RAM.
+[2025-Mar-07 10:39:27] INFO: Fact: 21, Prediction: 21
+[2025-Mar-07 10:39:27] INFO: Process finished successfully.

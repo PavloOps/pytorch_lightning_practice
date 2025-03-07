@@ -17,6 +17,7 @@ from dotenv import load_dotenv
 from lightning import (LightningDataModule, LightningModule, Trainer,
                        seed_everything)
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
+from sklearn.model_selection import train_test_split
 from torch import nn
 from torchview import draw_graph
 
@@ -35,6 +36,7 @@ class GeneralConfig:
 
 @dataclass
 class TrainingConfig:
+    val_size: float = 0.2
     lr: float = 1e-3
     batch_size: int = 128
     epochs: int = 20
@@ -53,7 +55,7 @@ class AugmentationConfig:
 
 @dataclass
 class DataConfig:
-    data_dir: str = './'
+    data_dir: str = './raw_data'
     train_url: str = 'https://github.com/a-milenkin/ml_instruments/raw/refs/heads/main/data/sign_mnist_train.csv.zip'
     test_url: str = 'https://github.com/a-milenkin/ml_instruments/raw/refs/heads/main/data/sign_mnist_test.csv.zip'
     train_hash: str = '4c2897f19fab2b0ae2a7e4fa82e969043315d9f3a1a9cc0948b576bf1189a7e5'
@@ -163,9 +165,9 @@ class MyConvNet(LightningModule):
         loss_dict = self.basic_step(batch, "train")
         return loss_dict["train/loss"]
 
-    def test_step(self, batch, batch_idx):
-        loss_dict = self.basic_step(batch, "test")
-        return loss_dict["test/loss"]
+    def validation_step(self, batch, batch_idx):
+        loss_dict = self.basic_step(batch, "valid")
+        return loss_dict["valid/loss"]
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
@@ -206,6 +208,7 @@ class SignLanguageLightning(LightningDataModule):
         super().__init__()
         self.config = config
         self.train_dataset = None
+        self.val_dataset = None
         self.test_dataset = None
         self.transform = transform
 
@@ -225,6 +228,7 @@ class SignLanguageLightning(LightningDataModule):
             and self.calculate_sha256(os.path.join(self.config.data.data_dir, file_name)) == ideal_file_hash
 
     def _download_file(self, file_path, file_url):
+        logger.info("Start files' downloading:")
         subprocess.run(["wget", "-O", file_path, file_url], check=True)
         subprocess.run(["unzip", file_path, "-d", self.config.data.data_dir], check=True)
         subprocess.run(["rm", file_path], check=True)
@@ -248,20 +252,30 @@ class SignLanguageLightning(LightningDataModule):
         else:
             logger.info('Test file already downloaded.')
 
-    def _load_dataset_to_ram(self, file_name):
-        raw_data = pd.read_csv(os.path.join(self.config.data.data_dir, file_name))
-        needed_dataset = SignLanguageDataset(raw_data, transform=self.transform)
-        del raw_data
-        gc.collect()
-        return needed_dataset
+    def _load_dataset_to_ram(self, df):
+        return SignLanguageDataset(df, transform=self.transform)
 
     def setup(self, stage):
-        if stage in ('fit', 'train', None) and self.train_dataset is None:
-            self.train_dataset = self._load_dataset_to_ram(self.config.data.train_name)
+        if stage in ('fit', 'train', None):
+            raw_data = pd.read_csv(os.path.join(self.config.data.data_dir, self.config.data.train_name))
+
+            train_data, val_data = train_test_split(
+                raw_data,
+                test_size=self.config.training.val_size,
+                random_state=self.config.general.seed
+            )
+
+            self.train_dataset = self._load_dataset_to_ram(train_data)
+            self.val_dataset = self._load_dataset_to_ram(val_data)
             logger.info("Train is loaded to RAM.")
+            del raw_data, train_data, val_data
+            gc.collect()
 
         if stage in ('test', None) and self.test_dataset is None:
-            self.test_dataset = self._load_dataset_to_ram(self.config.data.test_name)
+            raw_data = pd.read_csv(os.path.join(self.config.data.data_dir, self.config.data.test_name))
+            self.test_dataset = self._load_dataset_to_ram(raw_data)
+            del raw_data
+            gc.collect()
             logger.info("Test is loaded to RAM.")
 
     def _make_dataloader(self, needed_dataset, need_shuffle):
@@ -276,11 +290,15 @@ class SignLanguageLightning(LightningDataModule):
     def train_dataloader(self):
         return self._make_dataloader(self.train_dataset, need_shuffle=True)
 
+    def val_dataloader(self):
+        return self._make_dataloader(self.val_dataset, need_shuffle=False)
+
     def test_dataloader(self):
         return self._make_dataloader(self.test_dataset, need_shuffle=False)
 
     def teardown(self, stage=None):
         self.train_dataset = None
+        self.val_dataset = None
         self.test_dataset = None
         gc.collect()
 

@@ -1,6 +1,6 @@
-(.venv) (base) 06.03 14:23:11 pavloops@mur:~/PycharmProjects/ClearML_Pytorch_Lightening/lab2_pytorch_lightening$ python pavloops_solution2.py
-[2025-Mar-06 14:23:23] INFO: Convolutional Neural Network Architecture is:
-MyConvNet(
+(.venv) (base) 07.03 10:39:29 pavloops@mur:~/PycharmProjects/ClearML_Pytorch_Lightening/lab2_pytorch_lightening$ python pavloops_solution2.py
+[2025-Mar-07 10:46:20] INFO: Convolutional Neural Network Architecture is:
+[2025-Mar-07 10:46:21] INFO: MyConvNet(
   (block1): Sequential(
     (0): Conv2d(1, 8, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
     (1): BatchNorm2d(8, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
@@ -19,14 +19,14 @@ MyConvNet(
   (lin2): Linear(in_features=100, out_features=25, bias=True)
   (criterion): CrossEntropyLoss()
 )
-[2025-Mar-06 14:23:24] INFO: Augmentation params are: AugmentationConfig(normalize_mean=159.0, normalize_std=40.0, random_horizontal_flip_p=0.1, random_rotation_degrees=(-180, 180), random_rotation_p=0.2)
+[2025-Mar-07 10:46:21] INFO: Augmentation params are: AugmentationConfig(normalize_mean=159.0, normalize_std=40.0, random_horizontal_flip_p=0.1, random_rotation_degrees=(-180, 180), random_rotation_p=0.2)
 Seed set to 2025
 GPU available: True (cuda), used: True
 TPU available: False, using: 0 TPU cores
 HPU available: False, using: 0 HPUs
-[2025-Mar-06 14:23:24] INFO: Train file already downloaded.
-[2025-Mar-06 14:23:24] INFO: Test file already downloaded.
-[2025-Mar-06 14:23:26] INFO: Train is loaded to RAM.
+[2025-Mar-07 10:46:21] INFO: Train file already downloaded.
+[2025-Mar-07 10:46:21] INFO: Test file already downloaded.
+[2025-Mar-07 10:46:23] INFO: Train is loaded to RAM.
 LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
 
   | Name      | Type             | Params | Mode
@@ -45,9 +45,10 @@ LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
 0.329     Total estimated model params size (MB)
 15        Modules in train mode
 0         Modules in eval mode
-Epoch 19: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 215/215 [00:03<00:00, 54.78it/s, v_num=1, train/loss=0.235]`Trainer.fit` stopped: `max_epochs=20` reached.
-Epoch 19: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 215/215 [00:03<00:00, 54.60it/s, v_num=1, train/loss=0.235]
+Epoch 19: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 172/172 [00:04<00:00, 39.94it/s, v_num=7, train/loss=0.275, valid/loss=0.293]`Trainer.fit` stopped: `max_epochs=20` reached.
+Epoch 19: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 172/172 [00:04<00:00, 39.81it/s, v_num=7, train/loss=0.275, valid/loss=0.293]
 Seed set to 2025
-[2025-Mar-06 14:24:57] INFO: Test is loaded to RAM.
-Fact: 21, Prediction: 21
-[2025-Mar-06 14:24:58] INFO: Process finished successfully.
+[2025-Mar-07 10:48:15] INFO: Test is loaded to RAM.
+[2025-Mar-07 10:48:15] INFO: Fact: 21, Prediction: 21
+[2025-Mar-07 10:48:15] INFO: Process finished successfully.
+(.venv) (base) 07.03 10:48:16 pavloops@mur:~/PycharmProjects/ClearML_Pytorch_Lightening/lab2_pytorch_lightening$
