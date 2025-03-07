@@ -1,6 +1,6 @@
-(.venv) (base) 07.03 10:36:43 pavloops@mur:~/PycharmProjects/ClearML_Pytorch_Lightening/lab2_pytorch_lightening$ python pavloops_solution2.py --fast_dev_run
-[2025-Mar-07 10:36:50] INFO: Convolutional Neural Network Architecture is:
-[2025-Mar-07 10:36:51] INFO: MyConvNet(
+(.venv) (base) 07.03 15:28:41 pavloops@mur:~/PycharmProjects/ClearML_Pytorch_Lightening/lab2_pytorch_lightening$ python pavloops_solution2.py --fast_dev_run
+[2025-Mar-07 15:32:45] INFO: Convolutional Neural Network Architecture is:
+[2025-Mar-07 15:32:45] INFO: MyConvNet(
   (block1): Sequential(
     (0): Conv2d(1, 8, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
     (1): BatchNorm2d(8, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
@@ -19,53 +19,53 @@
   (lin2): Linear(in_features=100, out_features=25, bias=True)
   (criterion): CrossEntropyLoss()
 )
-[2025-Mar-07 10:36:51] INFO: Augmentation params are: AugmentationConfig(normalize_mean=159.0, normalize_std=40.0, random_horizontal_flip_p=0.1, random_rotation_degrees=(-180, 180), random_rotation_p=0.2)
+[2025-Mar-07 15:32:45] INFO: Augmentation params are: AugmentationConfig(normalize_mean=159.0, normalize_std=40.0, random_horizontal_flip_p=0.1, random_rotation_degrees=(-180, 180), random_rotation_p=0.2)
 Seed set to 2025
 GPU available: True (cuda), used: True
 TPU available: False, using: 0 TPU cores
 HPU available: False, using: 0 HPUs
 Running in `fast_dev_run` mode: will run the requested loop using 1 batch(es). Logging and checkpointing is suppressed.
-[2025-Mar-07 10:36:51] INFO: Start files' downloading:
---2025-03-07 10:36:51--  https://github.com/a-milenkin/ml_instruments/raw/refs/heads/main/data/sign_mnist_train.csv.zip
-Распознаётся github.com (github.com)… 140.82.114.3
-Подключение к github.com (github.com)|140.82.114.3|:443... соединение установлено.
+[2025-Mar-07 15:32:45] INFO: Start files' downloading:
+--2025-03-07 15:32:45--  https://github.com/a-milenkin/ml_instruments/raw/refs/heads/main/data/sign_mnist_train.csv.zip
+Распознаётся github.com (github.com)… 140.82.121.3
+Подключение к github.com (github.com)|140.82.121.3|:443... соединение установлено.
 HTTP-запрос отправлен. Ожидание ответа… 302 Found
 Адрес: https://raw.githubusercontent.com/a-milenkin/ml_instruments/refs/heads/main/data/sign_mnist_train.csv.zip [переход]
---2025-03-07 10:36:53--  https://raw.githubusercontent.com/a-milenkin/ml_instruments/refs/heads/main/data/sign_mnist_train.csv.zip
-Распознаётся raw.githubusercontent.com (raw.githubusercontent.com)… 185.199.111.133, 185.199.110.133, 185.199.109.133, ...
+--2025-03-07 15:32:49--  https://raw.githubusercontent.com/a-milenkin/ml_instruments/refs/heads/main/data/sign_mnist_train.csv.zip
+Распознаётся raw.githubusercontent.com (raw.githubusercontent.com)… 185.199.111.133, 185.199.110.133, 185.199.108.133, ...
 Подключение к raw.githubusercontent.com (raw.githubusercontent.com)|185.199.111.133|:443... соединение установлено.
 HTTP-запрос отправлен. Ожидание ответа… 200 OK
 Длина: 24485575 (23M) [application/zip]
 Сохранение в: ‘./raw_data/train.csv.zip’
 
-./raw_data/train.csv.zip                                100%[============================================================================================================================>]  23,35M  1,58MB/s    за 17s
+./raw_data/train.csv.zip                                100%[============================================================================================================================>]  23,35M  3,43MB/s    за 7,4s
 
-2025-03-07 10:37:12 (1,35 MB/s) - ‘./raw_data/train.csv.zip’ сохранён [24485575/24485575]
+2025-03-07 15:32:57 (3,14 MB/s) - ‘./raw_data/train.csv.zip’ сохранён [24485575/24485575]
 
 Archive:  ./raw_data/train.csv.zip
   inflating: ./raw_data/sign_mnist_train.csv
   inflating: ./raw_data/__MACOSX/._sign_mnist_train.csv
-[2025-Mar-07 10:37:13] INFO: Start files' downloading:
---2025-03-07 10:37:13--  https://github.com/a-milenkin/ml_instruments/raw/refs/heads/main/data/sign_mnist_test.csv.zip
-Распознаётся github.com (github.com)… 140.82.114.3
-Подключение к github.com (github.com)|140.82.114.3|:443... соединение установлено.
+[2025-Mar-07 15:32:59] INFO: Start files' downloading:
+--2025-03-07 15:32:59--  https://github.com/a-milenkin/ml_instruments/raw/refs/heads/main/data/sign_mnist_test.csv.zip
+Распознаётся github.com (github.com)… 140.82.121.3
+Подключение к github.com (github.com)|140.82.121.3|:443... соединение установлено.
 HTTP-запрос отправлен. Ожидание ответа… 302 Found
 Адрес: https://raw.githubusercontent.com/a-milenkin/ml_instruments/refs/heads/main/data/sign_mnist_test.csv.zip [переход]
---2025-03-07 10:37:14--  https://raw.githubusercontent.com/a-milenkin/ml_instruments/refs/heads/main/data/sign_mnist_test.csv.zip
-Распознаётся raw.githubusercontent.com (raw.githubusercontent.com)… 185.199.111.133, 185.199.110.133, 185.199.109.133, ...
+--2025-03-07 15:33:00--  https://raw.githubusercontent.com/a-milenkin/ml_instruments/refs/heads/main/data/sign_mnist_test.csv.zip
+Распознаётся raw.githubusercontent.com (raw.githubusercontent.com)… 185.199.111.133, 185.199.110.133, 185.199.108.133, ...
 Подключение к raw.githubusercontent.com (raw.githubusercontent.com)|185.199.111.133|:443... соединение установлено.
 HTTP-запрос отправлен. Ожидание ответа… 200 OK
 Длина: 6358185 (6,1M) [application/zip]
 Сохранение в: ‘./raw_data/test.csv.zip’
 
-./raw_data/test.csv.zip                                 100%[============================================================================================================================>]   6,06M  1,11MB/s    за 5,4s
+./raw_data/test.csv.zip                                 100%[============================================================================================================================>]   6,06M  1,67MB/s    за 3,9s
 
-2025-03-07 10:37:21 (1,11 MB/s) - ‘./raw_data/test.csv.zip’ сохранён [6358185/6358185]
+2025-03-07 15:33:06 (1,57 MB/s) - ‘./raw_data/test.csv.zip’ сохранён [6358185/6358185]
 
 Archive:  ./raw_data/test.csv.zip
   inflating: ./raw_data/sign_mnist_test.csv
   inflating: ./raw_data/__MACOSX/._sign_mnist_test.csv
-[2025-Mar-07 10:37:25] INFO: Train is loaded to RAM.
+[2025-Mar-07 15:33:09] INFO: Train is loaded to RAM.
 LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
 
   | Name      | Type             | Params | Mode
@@ -85,13 +85,13 @@ LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
 15        Modules in train mode
 0         Modules in eval mode
 `Trainer.fit` stopped: `max_steps=1` reached.
-[2025-Mar-07 10:37:26] INFO: Тестовый прогон успешно пройден
+[2025-Mar-07 15:33:11] INFO: Тестовый прогон успешно пройден
 GPU available: True (cuda), used: True
 TPU available: False, using: 0 TPU cores
 HPU available: False, using: 0 HPUs
-[2025-Mar-07 10:37:27] INFO: Train file already downloaded.
-[2025-Mar-07 10:37:27] INFO: Test file already downloaded.
-[2025-Mar-07 10:37:29] INFO: Train is loaded to RAM.
+[2025-Mar-07 15:33:11] INFO: Train file already downloaded.
+[2025-Mar-07 15:33:11] INFO: Test file already downloaded.
+[2025-Mar-07 15:33:15] INFO: Train is loaded to RAM.
 LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
 
   | Name      | Type             | Params | Mode
@@ -110,9 +110,9 @@ LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
 0.329     Total estimated model params size (MB)
 15        Modules in train mode
 0         Modules in eval mode
-Epoch 19: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 172/172 [00:04<00:00, 39.12it/s, v_num=6, train/loss=0.258, valid/loss=0.263]`Trainer.fit` stopped: `max_epochs=20` reached.
-Epoch 19: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 172/172 [00:04<00:00, 38.98it/s, v_num=6, train/loss=0.258, valid/loss=0.263]
+Epoch 19: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 172/172 [00:05<00:00, 31.07it/s, v_num=0, train/loss=0.310, valid/loss=77.70]`Trainer.fit` stopped: `max_epochs=20` reached.
+Epoch 19: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 172/172 [00:05<00:00, 30.96it/s, v_num=0, train/loss=0.310, valid/loss=77.70]
 Seed set to 2025
-[2025-Mar-07 10:39:26] INFO: Test is loaded to RAM.
-[2025-Mar-07 10:39:27] INFO: Fact: 21, Prediction: 21
-[2025-Mar-07 10:39:27] INFO: Process finished successfully.
+[2025-Mar-07 15:35:11] INFO: Test is loaded to RAM.
+[2025-Mar-07 15:35:11] INFO: Fact: 14, Prediction: 14
+[2025-Mar-07 15:35:11] INFO: Process finished successfully.

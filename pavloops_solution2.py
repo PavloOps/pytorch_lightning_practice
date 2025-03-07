@@ -197,6 +197,7 @@ class SignLanguageDataset(data.Dataset):
 
         current_image = self.df.iloc[index, 1:].values.reshape(28, 28)
         current_image = torch.Tensor(current_image).unsqueeze(0)
+
         if self.transform is not None:
             current_image = self.transform(current_image)
 
@@ -204,16 +205,17 @@ class SignLanguageDataset(data.Dataset):
 
 
 class SignLanguageLightning(LightningDataModule):
-    def __init__(self, config: CFG, transform=None):
+    def __init__(self, config: CFG, normalize=None, normalize_and_augmentation=None):
         super().__init__()
         self.config = config
         self.train_dataset = None
         self.val_dataset = None
         self.test_dataset = None
-        self.transform = transform
+        self.normalize = normalize
+        self.normalize_and_augmentation = normalize_and_augmentation
 
     @staticmethod
-    def calculate_sha256(file_path):
+    def _calculate_sha256(file_path):
         assert os.path.exists(file_path), f"File not found: {file_path}"
 
         sha256 = hashlib.sha256()
@@ -225,7 +227,7 @@ class SignLanguageLightning(LightningDataModule):
 
     def _file_is_available(self, file_name, ideal_file_hash):
         return os.path.exists(os.path.join(self.config.data.data_dir, file_name)) \
-            and self.calculate_sha256(os.path.join(self.config.data.data_dir, file_name)) == ideal_file_hash
+            and self._calculate_sha256(os.path.join(self.config.data.data_dir, file_name)) == ideal_file_hash
 
     def _download_file(self, file_path, file_url):
         logger.info("Start files' downloading:")
@@ -252,8 +254,11 @@ class SignLanguageLightning(LightningDataModule):
         else:
             logger.info('Test file already downloaded.')
 
-    def _load_dataset_to_ram(self, df):
-        return SignLanguageDataset(df, transform=self.transform)
+    def _load_dataset_to_ram(self, df, mode):
+        if mode == 'train':
+            return SignLanguageDataset(df, transform=self.normalize_and_augmentation)
+        else:
+            return SignLanguageDataset(df, transform=self.normalize)
 
     def setup(self, stage):
         if stage in ('fit', 'train', None):
@@ -265,15 +270,15 @@ class SignLanguageLightning(LightningDataModule):
                 random_state=self.config.general.seed
             )
 
-            self.train_dataset = self._load_dataset_to_ram(train_data)
-            self.val_dataset = self._load_dataset_to_ram(val_data)
-            logger.info("Train is loaded to RAM.")
+            self.train_dataset = self._load_dataset_to_ram(train_data, mode='train')
+            self.val_dataset = self._load_dataset_to_ram(val_data, mode='val')
+            logger.info("Train and validation are loaded to RAM.")
             del raw_data, train_data, val_data
             gc.collect()
 
         if stage in ('test', None) and self.test_dataset is None:
             raw_data = pd.read_csv(os.path.join(self.config.data.data_dir, self.config.data.test_name))
-            self.test_dataset = self._load_dataset_to_ram(raw_data)
+            self.test_dataset = self._load_dataset_to_ram(raw_data, mode='test')
             del raw_data
             gc.collect()
             logger.info("Test is loaded to RAM.")
@@ -323,7 +328,9 @@ def run_experiment(config, need_dev_run=False):
 
     dataset = SignLanguageLightning(
         config=config,
-        transform=transforms.Compose([
+        normalize=transforms.Compose([
+            transforms.Normalize(config.augmentation.normalize_mean, config.augmentation.normalize_std)]),
+        normalize_and_augmentation=transforms.Compose([
             transforms.Normalize(config.augmentation.normalize_mean, config.augmentation.normalize_std),
             transforms.RandomHorizontalFlip(p=config.augmentation.random_horizontal_flip_p),
             transforms.RandomApply(
@@ -355,21 +362,12 @@ def run_experiment(config, need_dev_run=False):
 
 def make_one_picture_inference(config, wanted_index):
     seed_everything(config.general.seed)
-    dataset = SignLanguageLightning(
-        config=config,
-        transform=transforms.Compose([
-            transforms.Normalize(config.augmentation.normalize_mean, config.augmentation.normalize_std),
-            transforms.RandomHorizontalFlip(p=config.augmentation.random_horizontal_flip_p),
-            transforms.RandomApply([transforms.RandomRotation(
-                degrees=config.augmentation.random_rotation_degrees)],
-                p=config.augmentation.random_rotation_p
-            ),
-        ])
-    )
 
     restored_model = MyConvNet.load_from_checkpoint(config.model.weights_file_name, config=config)
     restored_model = restored_model.cpu()
     restored_model.eval()
+
+    dataset = SignLanguageLightning(config=config)
     dataset.setup('test')
     inference_loader = dataset.test_dataloader()
 

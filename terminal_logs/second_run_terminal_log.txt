@@ -1,0 +1,53 @@
+(.venv) (base) 07.03 15:39:15 pavloops@mur:~/PycharmProjects/ClearML_Pytorch_Lightening/lab2_pytorch_lightening$ python pavloops_solution2.py
+[2025-Mar-07 15:55:14] INFO: Convolutional Neural Network Architecture is:
+[2025-Mar-07 15:55:15] INFO: MyConvNet(
+  (block1): Sequential(
+    (0): Conv2d(1, 8, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (1): BatchNorm2d(8, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (2): AvgPool2d(kernel_size=2, stride=2, padding=0)
+    (3): ReLU()
+  )
+  (block2): Sequential(
+    (0): Conv2d(8, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (1): BatchNorm2d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (2): AvgPool2d(kernel_size=2, stride=2, padding=0)
+    (3): ReLU()
+  )
+  (lin1): Linear(in_features=784, out_features=100, bias=True)
+  (act1): LeakyReLU(negative_slope=0.01)
+  (drop1): Dropout(p=0.3, inplace=False)
+  (lin2): Linear(in_features=100, out_features=25, bias=True)
+  (criterion): CrossEntropyLoss()
+)
+[2025-Mar-07 15:55:15] INFO: Augmentation params are: AugmentationConfig(normalize_mean=159.0, normalize_std=40.0, random_horizontal_flip_p=0.1, random_rotation_degrees=(-180, 180), random_rotation_p=0.2)
+Seed set to 2025
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+HPU available: False, using: 0 HPUs
+[2025-Mar-07 15:55:15] INFO: Train file already downloaded.
+[2025-Mar-07 15:55:15] INFO: Test file already downloaded.
+[2025-Mar-07 15:55:18] INFO: Train and validation are loaded to RAM.
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+  | Name      | Type             | Params | Mode
+-------------------------------------------------------
+0 | block1    | Sequential       | 96     | train
+1 | block2    | Sequential       | 1.2 K  | train
+2 | lin1      | Linear           | 78.5 K | train
+3 | act1      | LeakyReLU        | 0      | train
+4 | drop1     | Dropout          | 0      | train
+5 | lin2      | Linear           | 2.5 K  | train
+6 | criterion | CrossEntropyLoss | 0      | train
+-------------------------------------------------------
+82.3 K    Trainable params
+0         Non-trainable params
+82.3 K    Total params
+0.329     Total estimated model params size (MB)
+15        Modules in train mode
+0         Modules in eval mode
+Epoch 19: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 172/172 [00:05<00:00, 31.03it/s, v_num=0, train/loss=0.268, valid/loss=0.00893]`Trainer.fit` stopped: `max_epochs=20` reached.
+Epoch 19: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 172/172 [00:05<00:00, 30.92it/s, v_num=0, train/loss=0.268, valid/loss=0.00893]
+Seed set to 2025
+[2025-Mar-07 15:57:15] INFO: Test is loaded to RAM.
+[2025-Mar-07 15:57:16] INFO: Fact: 21, Prediction: 22
+[2025-Mar-07 15:57:16] INFO: Process finished successfully.
