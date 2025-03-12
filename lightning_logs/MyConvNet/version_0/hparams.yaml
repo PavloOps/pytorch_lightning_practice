@@ -1,0 +1,37 @@
+config:
+  general:
+    seed: 2025
+    num_workers: 4
+  training:
+    val_size: 0.2
+    lr: 0.001
+    batch_size: 128
+    max_epochs: 20
+    dropout: 0.3
+    weight_decay: 0.05
+  augmentation:
+    normalize_mean: 159.0
+    normalize_std: 40.0
+    random_horizontal_flip_p: 0.1
+    random_rotation_degrees:
+    - -180
+    - 180
+    random_rotation_p: 0.2
+  data:
+    data_dir: dataset
+    saved_models_dir: saved_models
+    train_url: https://github.com/a-milenkin/ml_instruments/raw/refs/heads/main/data/sign_mnist_train.csv.zip
+    test_url: https://github.com/a-milenkin/ml_instruments/raw/refs/heads/main/data/sign_mnist_test.csv.zip
+    train_hash: 4c2897f19fab2b0ae2a7e4fa82e969043315d9f3a1a9cc0948b576bf1189a7e5
+    test_hash: 0e9d67bae23e67f40728e0b63bf15ad4bd5175947b8a9fac5dd9f17ce133c47b
+    train_name: sign_mnist_train.csv
+    test_name: sign_mnist_test.csv
+  model:
+    n_classes: 25
+    image_size: 28
+    stride: 1
+    dilation: 1
+    kernel_size_block1: 3
+    kernel_size_block2: 3
+    padding_block1: 1
+    padding_block2: 1
