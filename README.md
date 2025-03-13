@@ -132,7 +132,11 @@ python pavloops_solution2.py --fast_dev_run
 
 1. Как выглядит первый запуск с загрузкой файлов с гита и обучением (это была первая часть лабы): [first_run_terminal_log.txt](terminal_logs%2Ffirst_run_terminal_log.txt)
 2. Как выглядит запуск обучения, когда файлы уже загружены, добавлены метрики, коллбэки (это была вторая часть лабы): [second_run_terminal_log.txt](terminal_logs%2Fsecond_run_terminal_log.txt)
-3. А вот и картиночка с инференса:
+3. Графики с процесса обучения
+
+![pavloops_myconvnet_graph.png](pics/training_plot.png)
+
+4. А вот и картиночка с инференса:
 
 ![test_picture.png](pics/test_picture.png)
 
