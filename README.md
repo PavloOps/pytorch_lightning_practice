@@ -1,5 +1,7 @@
 # 🔥 PyTorch Lightning ⚡️: Sign MNIST Dataset Example  🤗 
 
+## (👑🥇 merch winner 🥳🎉)
+
 > я в отпуске не дома, пришлось похитить ноут Димы :)
 
 [![python](https://img.shields.io/badge/Python-3.12-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org)
