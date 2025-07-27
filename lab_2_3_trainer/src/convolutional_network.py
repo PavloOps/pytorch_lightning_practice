@@ -3,7 +3,7 @@ import torchmetrics as tm
 from lightning import LightningModule
 from torch import nn
 
-from lab_2_3.src.custom_metric import FalseDiscoveryRate
+from lab_2_3_trainer.src.custom_metric import FalseDiscoveryRate
 
 
 def calc_out_size(img_size, kernel_size, stride=1, padding=1, dilation=1):

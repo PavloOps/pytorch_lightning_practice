@@ -1,19 +1,19 @@
-# 🔥 PyTorch Lightning ⚡️: Sign MNIST Dataset Example  🤗 
+# [🤖 ClearML & PyTorch Lightning Course's Solutions (Stepik)](https://stepik.org/course/214389?auth=login)
+
+## [Lab 1: Logging](https://github.com/PavloOps/pytorch_lightning_practice/tree/main/lab_1_logging)
+
+<img src="lab_1_logging/log_mlops.png" width="800" />
+
+## [Lab 2-3: Trainer & Sign MNIST Dataset Example  🤗](https://github.com/PavloOps/pytorch_lightning_practice/tree/main/lab_2_3) 
 
 ## (👑🥇 merch winner 🥳🎉)
-
-> я в отпуске не дома, пришлось похитить ноут Димы :)
-
 [![python](https://img.shields.io/badge/Python-3.12-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org)
 ![PyTorch Lightning](https://img.shields.io/badge/pytorch-lightning-blue.svg?logo=PyTorch%20Lightning)
 [![pytorch](https://img.shields.io/badge/PyTorch-2.5.0-EE4C2C.svg?style=flat&logo=pytorch)](https://pytorch.org)
-
 ## Motivation
 Вы когда-нибудь считали, сколько строк кода надо сваять, чтобы обучить нейронку?)
 
-А я вот посчитала, когда поступила на курс [🤖 Машинное обучение с помощью ClearML и Pytorch Lightning ⚡](https://stepik.org/course/214389?auth=login)
-
-80 строк кода занимает только трейн-луп :) а еще собрать надо загрузчика и тд, и тп. 
+А я вот посчитала, когда поступила на курс: 80 строк кода занимает только трейн-луп :) а еще собрать надо загрузчика и тд, и тп. 
 
 Как сейчас помню свой курсач по "Введению в глубокое обучение" в [НИУ ВШЭ](https://www.hse.ru/ma/mds/news/909801290.html) - у меня было два тренировочных цикла - мы тюнили и конволюшку, и берта. Это был JN по размеру сопоставимый с "Войной и миром" Льва Толстого. Запутаться, допустить ошибку там можно было очень легко, мы выживали как могли. Считаю, что нельзя останавливаться на достигнутом любительском уровне, нужно переходить на качественный код 🫡
 
@@ -66,13 +66,13 @@
 ## Dataset
 Датасет - американский язык жестов, почитать о нём можно тут: [Sign MNIST Dataset](https://www.kaggle.com/datasets/datamunge/sign-language-mnist)
 
-![alphabet.png](lab_2_3/pics/alphabet.png)
+![alphabet.png](lab_2_3_trainer/pics/alphabet.png)
 
 
 ## Model
 А вот и претендент на то, чтобы классно обучаться с обвязкой Pytorch Lightning :) простая сеточка - колбаса-конволюшечка:
 
-![pavloops_myconvnet_graph.png](lab_2_3/pics/pavloops_myconvnet_graph.png)
+![pavloops_myconvnet_graph.png](lab_2_3_trainer/pics/pavloops_myconvnet_graph.png)
 
 ## How to Run (Linux OS)
 
@@ -109,7 +109,7 @@ visualize_network(MyConvNet(cfg), "pavloops_myconvnet_graph")  # создаем 
 
 run_experiment(cfg, need_dev_run=fast_dev_run)  # запускаем наш эксперимент
 
-make_one_picture_inference(config=cfg, dir_path="lab_2_3/saved_models",
+make_one_picture_inference(config=cfg, dir_path="lab_2_3_trainer/saved_models",
                            wanted_index=12)  # делаем инференс по желаемому индексу из тестового датасета
 
 simple_visualize_metrics(
@@ -136,11 +136,12 @@ simple_visualize_metrics(
 2. Как выглядит запуск обучения, когда файлы уже загружены, добавлены метрики, коллбэки (это была вторая часть лабы): [second_run_terminal_log.txt](terminal_logs%2Fsecond_run_terminal_log.txt)
 3. Графики с процесса обучения
 
-![pavloops_myconvnet_graph.png](lab_2_3/pics/training_plot.png)
+
+<img src="lab_2_3_trainer/pics/training_plot.png" width="600" />
 
 4. А вот и картиночка с инференса:
 
-![test_picture.png](lab_2_3/pics/test_picture.png)
+<img src="lab_2_3_trainer/pics/test_picture.png" width="200" />
 
 ## Final Notes
 
@@ -149,3 +150,7 @@ simple_visualize_metrics(
 Мне понравилось, харды прокачались)
 
 🌟🌟🌟Если вам понравилось моё решение, и оно было вам полезно - сделайте тык в звездочку, вам не сложно, а мне будет приятно ❤️❤️❤️
+
+## [Lab 4: GAN & PyTorch Lighting  🤗](lab_4_gan/pavloops_solution4.py) 
+
+In progress...
