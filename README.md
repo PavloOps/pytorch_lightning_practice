@@ -66,13 +66,13 @@
 ## Dataset
 Датасет - американский язык жестов, почитать о нём можно тут: [Sign MNIST Dataset](https://www.kaggle.com/datasets/datamunge/sign-language-mnist)
 
-![alphabet.png](pics/alphabet.png)
+![alphabet.png](lab_2_3/pics/alphabet.png)
 
 
 ## Model
 А вот и претендент на то, чтобы классно обучаться с обвязкой Pytorch Lightning :) простая сеточка - колбаса-конволюшечка:
 
-![pavloops_myconvnet_graph.png](pics/pavloops_myconvnet_graph.png)
+![pavloops_myconvnet_graph.png](lab_2_3/pics/pavloops_myconvnet_graph.png)
 
 ## How to Run (Linux OS)
 
@@ -100,20 +100,20 @@ python pavloops_solution2.py --fast_dev_run
 
 ## How does it work?
 
-
-
 ```python
     # Решение начинается с того, что с CLI будет собран флаг fast_dev_run (по умолчанию он True)
 
-    cfg = CFG()   # импортируем конфигурацию из файлика config.py
+cfg = CFG()  # импортируем конфигурацию из файлика config.py
 
-    visualize_network(MyConvNet(cfg), "pavloops_myconvnet_graph")   # создаем и сохраняем граф нейросети
+visualize_network(MyConvNet(cfg), "pavloops_myconvnet_graph")  # создаем и сохраняем граф нейросети
 
-    run_experiment(cfg, need_dev_run=fast_dev_run)   # запускаем наш эксперимент
-    
-    make_one_picture_inference(config=cfg, dir_path="saved_models", wanted_index=12)   # делаем инференс по желаемому индексу из тестового датасета
-    
-    simple_visualize_metrics("lightning_logs/MyConvNet/version_0/metrics.csv")   # смотрим графики обучения (пока тут, потом будет в ClearML)
+run_experiment(cfg, need_dev_run=fast_dev_run)  # запускаем наш эксперимент
+
+make_one_picture_inference(config=cfg, dir_path="lab_2_3/saved_models",
+                           wanted_index=12)  # делаем инференс по желаемому индексу из тестового датасета
+
+simple_visualize_metrics(
+  "lightning_logs/MyConvNet/version_0/metrics.csv")  # смотрим графики обучения (пока тут, потом будет в ClearML)
 ```
 
 Хотелось бы отдельно немного рассказать о функции run_experiment:
@@ -136,11 +136,11 @@ python pavloops_solution2.py --fast_dev_run
 2. Как выглядит запуск обучения, когда файлы уже загружены, добавлены метрики, коллбэки (это была вторая часть лабы): [second_run_terminal_log.txt](terminal_logs%2Fsecond_run_terminal_log.txt)
 3. Графики с процесса обучения
 
-![pavloops_myconvnet_graph.png](pics/training_plot.png)
+![pavloops_myconvnet_graph.png](lab_2_3/pics/training_plot.png)
 
 4. А вот и картиночка с инференса:
 
-![test_picture.png](pics/test_picture.png)
+![test_picture.png](lab_2_3/pics/test_picture.png)
 
 ## Final Notes
 

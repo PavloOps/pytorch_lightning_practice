@@ -2,7 +2,7 @@ from unittest import TestCase, main
 
 import torch
 
-from src.custom_metric import FalseDiscoveryRate
+from lab_2_3.src.custom_metric import FalseDiscoveryRate
 
 
 class TestFalseDiscoveryRate(TestCase):
