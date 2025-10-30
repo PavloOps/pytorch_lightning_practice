@@ -3,29 +3,25 @@ from torchmetrics import Metric
 
 
 class FalseDiscoveryRate(Metric):
+    """Compute False Discovery Rate (FDR = FP / (FP + TP)) for multiclass tasks."""
+
     is_differentiable = False
     higher_is_better = False
-    full_state_update: bool = False
+    full_state_update = False
     plot_lower_bound = 0.0
     plot_upper_bound = 1.0
 
     allowed_tasks = ("binary", "multiclass", "multilabel")
 
     def __init__(
-        self,
-        num_classes: int,
-        task: str = "multiclass",
-        reduction="macro",
-        dist_sync_on_step=False,
+        self, num_classes: int, task: str = "multiclass", reduction: str = "macro"
     ):
-        super().__init__(dist_sync_on_step=dist_sync_on_step)
+        super().__init__()
 
         if task not in self.allowed_tasks:
             raise NotImplementedError(
-                f"Task '{task}' is not implemented yet. "
-                f"Supported tasks: {self.allowed_tasks}"
+                f"Unsupported task '{task}'. Supported: {self.allowed_tasks}"
             )
-
         if reduction not in ("macro", "micro", "none"):
             raise ValueError("Reduction must be one of: 'macro', 'micro', or 'none'.")
 
@@ -34,67 +30,38 @@ class FalseDiscoveryRate(Metric):
         self.reduction = reduction
 
         self.add_state(
-            "false_positives",
-            default=torch.zeros(num_classes, dtype=torch.float),
-            dist_reduce_fx="sum",
+            "false_positives", default=torch.zeros(num_classes), dist_reduce_fx="sum"
         )
         self.add_state(
-            "true_positives",
-            default=torch.zeros(num_classes, dtype=torch.float),
-            dist_reduce_fx="sum",
+            "true_positives", default=torch.zeros(num_classes), dist_reduce_fx="sum"
         )
 
-    def update(self, prediction, target):
-        # Здесь можно позже добавить обработку разных задач
-        if self.task != "multiclass":
-            raise NotImplementedError(
-                f"Task '{self.task}' is not implemented in update(). "
-                f"Only 'multiclass' currently works."
-            )
-
-        if prediction.ndim == 2:
-            predicted_classes = torch.argmax(prediction, dim=1)
-        else:
-            predicted_classes = prediction
-
-        predicted_classes = predicted_classes.to(target.device)
+    def update(self, preds: torch.Tensor, target: torch.Tensor):
+        if preds.ndim == 2:
+            preds = torch.argmax(preds, dim=1)
+        preds = preds.to(target.device)
 
         for cls in range(self.num_classes):
-            tp = torch.sum((predicted_classes == cls) & (target == cls)).float()
-            fp = torch.sum((predicted_classes == cls) & (target != cls)).float()
-
+            mask_pred = preds == cls
+            tp = (mask_pred & (target == cls)).sum().float()
+            fp = (mask_pred & (target != cls)).sum().float()
             self.true_positives[cls] += tp
             self.false_positives[cls] += fp
 
     def compute(self):
-        tp = self.true_positives
-        fp = self.false_positives
-
-        denominator = tp + fp
-        fdr_per_class = torch.zeros_like(denominator)
-
-        valid = denominator > 0
-        fdr_per_class[valid] = fp[valid] / denominator[valid]
+        tp, fp = self.true_positives, self.false_positives
+        denom = tp + fp
+        fdr = torch.zeros_like(denom)
+        valid = denom > 0
+        fdr[valid] = fp[valid] / denom[valid]
 
         if self.reduction == "macro":
-            return fdr_per_class.mean()
-
+            return fdr.mean()
         elif self.reduction == "micro":
-            total_tp = tp.sum()
-            total_fp = fp.sum()
-            total_denominator = total_tp + total_fp
-
-            if total_denominator == 0:
-                return torch.tensor(0.0, device=tp.device)
-
-            return total_fp / total_denominator
-
-        elif self.reduction == "none":
-            return fdr_per_class
-
-    def forward(self, prediction, target):
-        self.update(prediction, target)
-        return self.compute()
+            total_tp, total_fp = tp.sum(), fp.sum()
+            total_denom = total_tp + total_fp
+            return total_fp / total_denom if total_denom > 0 else torch.tensor(0.0)
+        return fdr
 
     def plot(self, val=None, ax=None):
         return self._plot(val, ax)
@@ -104,16 +71,16 @@ if __name__ == "__main__":
     metric = FalseDiscoveryRate(num_classes=3, reduction="none")
 
     targets = torch.tensor([0, 1, 2, 0, 1, 2])
-    preds = torch.nn.functional.one_hot(targets, num_classes=3).float()
+    predictions = torch.nn.functional.one_hot(targets, num_classes=3).float()
 
-    metric.update(preds, targets)
+    metric.update(predictions, targets)
     print("None:", metric.compute())  # [0., 0., 0.]
 
     metric = FalseDiscoveryRate(num_classes=3, reduction="none")
 
     targets = torch.tensor([1, 2, 1, 2])
-    preds = torch.zeros((4, 3))
-    preds[:, 0] = 10
+    predictions = torch.zeros((4, 3))
+    predictions[:, 0] = 10
 
-    metric.update(preds, targets)
+    metric.update(predictions, targets)
     print("None:", metric.compute())  # [1., 0., 0.]
