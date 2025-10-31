@@ -96,10 +96,10 @@ if __name__ == "__main__":
     loader = dm.train_dataloader()
 
     batch = next(iter(loader))
-    images, labels = batch
+    images_, labels_ = batch
 
     print("✅ Check is done!")
-    print(f"Image size: {images.shape}")
-    print(f"Batch size: {labels.shape}")
-    print(f"Image type: {images.dtype}")
-    print(labels[:10])
+    print(f"Image size: {images_.shape}")
+    print(f"Batch size: {labels_.shape}")
+    print(f"Image type: {images_.dtype}")
+    print(labels_[:10])
