@@ -1,14 +1,18 @@
 import os
+from dataclasses import asdict
 
+from lab_4_gan.config import CFG
 from lightning import Trainer
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 
 
-def create_trainer(dir_path, params):
+def create_trainer(dir_path, config: CFG, fast_dev_run=False):
     os.makedirs(dir_path, exist_ok=True)
+    trainer_params_dict = asdict(config.trainer)
 
     return Trainer(
-        **params,
+        **trainer_params_dict,
+        fast_dev_run=fast_dev_run,
         callbacks=[
             EarlyStopping(
                 monitor="val/loss_generator",
@@ -24,5 +28,4 @@ def create_trainer(dir_path, params):
                 filename="gan-{epoch:02d}-{val_loss_generator:.4f}",
             ),
         ],
-        check_val_every_n_epoch=1,
     )
