@@ -1,9 +1,8 @@
 import torch
 import torchmetrics as tm
+from lab_2_3_trainer.src.custom_metric import FalseDiscoveryRate
 from lightning import LightningModule
 from torch import nn
-
-from lab_2_3_trainer.src.custom_metric import FalseDiscoveryRate
 
 
 def calc_out_size(img_size, kernel_size, stride=1, padding=1, dilation=1):
@@ -111,15 +110,29 @@ class MyConvNet(LightningModule):
         metrics = {f"{step}/loss": self.criterion(prediction, target)}
 
         if step == "train":
-            metrics[f"{step}/fbeta"] = self.train_fbeta(prediction, target)
-            metrics[f"{step}/roc_auc"] = self.train_roc_auc(prediction, target)
-            metrics[f"{step}/fdr"] = self.train_fdr(prediction, target)
-        elif step == "valid":
-            metrics[f"{step}/fbeta"] = self.valid_fbeta(prediction, target)
-            metrics[f"{step}/roc_auc"] = self.valid_roc_auc(prediction, target)
-            metrics[f"{step}/fdr"] = self.valid_fdr(prediction, target)
+            self.train_fbeta.update(prediction, target)
+            self.train_roc_auc.update(prediction, target)
+            self.train_fdr.update(prediction, target)
+            self.log(
+                "train/fbeta",
+                self.train_fbeta,
+                prog_bar=True,
+                on_step=True,
+                on_epoch=False,
+            )
 
-        self.log_dict(metrics, prog_bar=True, on_epoch=True, sync_dist=True)
+        elif step == "valid":
+            self.valid_fbeta.update(prediction, target)
+            self.valid_roc_auc.update(prediction, target)
+            self.valid_fdr.update(prediction, target)
+            self.log(
+                "val/fbeta",
+                self.valid_fbeta,
+                prog_bar=True,
+                on_step=False,
+                on_epoch=True,
+            )
+
         return metrics
 
     def training_step(self, batch, batch_idx):
