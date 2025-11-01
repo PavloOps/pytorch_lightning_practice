@@ -6,9 +6,8 @@ import torch
 import torch.utils.data as data
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
-from lightning import LightningDataModule
-
 from lab_4_gan.config import CFG
+from lightning import LightningDataModule
 
 logging.basicConfig(
     level=logging.INFO,
@@ -80,6 +79,7 @@ class MNISTLightning(LightningDataModule):
             shuffle=True,
             num_workers=os.cpu_count(),
             pin_memory=True,
+            drop_last=True,
         )
 
     def teardown(self, stage=None):
