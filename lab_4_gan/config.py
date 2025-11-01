@@ -30,7 +30,6 @@ class TrainingProcessConfig:
 class DataConfig:
     data_dir: str = "data"
     saved_models_dir: str = "saved_models"
-    dataset_hash: str = "4c2897f19fab2b0ae2a7e4fa82e969043315d9f3a1a9cc0948b576bf1189a7e5"
     file_name: str = "dataset.pt"
 
 @dataclass
