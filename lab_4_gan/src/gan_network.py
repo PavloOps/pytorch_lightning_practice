@@ -1,3 +1,5 @@
+from dataclasses import asdict
+
 import torch
 import torch.nn as nn
 from clearml import Task
@@ -47,9 +49,9 @@ class Discriminator(nn.Module):
 class GAN(LightningModule):
     def __init__(self, config: CFG, clearml_logger: Task.logger):
         super().__init__()
-        self.save_hyperparameters()
         self.config = config
         self.clearml_logger = clearml_logger
+        self.save_hyperparameters(asdict(config))
 
         self.batch_size = config.training.batch_size
         self.noise_dim = config.training.noise_dim
