@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass, field
+from torch.cuda import is_available
 
 
 @dataclass
@@ -10,7 +11,7 @@ class GeneralConfig:
 @dataclass
 class TrainerConfig:
     max_epochs: int = 10
-    accelerator: str = "gpu"
+    accelerator: str = "cuda" if is_available() else "cpu"
     devices: int = 1
     log_every_n_steps: int = 10
     check_val_every_n_epoch: int = 2
