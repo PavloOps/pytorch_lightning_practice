@@ -52,6 +52,8 @@ if __name__ == "__main__":
         tags=["Lab4", "MNIST", "digits", "GAN"],
     )
 
+    task.execute_remotely(queue_name="default")
+
     curr_clearml_logger = task.get_logger()
 
     for sub_config_name in curr_config_dict:
