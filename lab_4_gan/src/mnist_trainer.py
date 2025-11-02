@@ -1,7 +1,7 @@
 import os
 from dataclasses import asdict
 
-from .config import CFG
+from config import CFG
 from lightning import Trainer
 from lightning.pytorch.callbacks import (EarlyStopping, LearningRateMonitor,
                                          ModelCheckpoint)

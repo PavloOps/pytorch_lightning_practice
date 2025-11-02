@@ -6,7 +6,7 @@ from clearml import Task
 from lightning import seed_everything
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
 
-from config import CFG
+from src.config import CFG
 from src.gan_network import GAN
 from src.mnist_data_module import MNISTLightning
 from src.mnist_trainer import create_trainer

@@ -29,7 +29,7 @@ class TrainingProcessConfig:
 
 @dataclass
 class DataConfig:
-    data_dir: str = "data"
+    data_dir: str = "../data"
     saved_models_dir: str = "saved_models"
     file_name: str = "dataset.pt"
 
