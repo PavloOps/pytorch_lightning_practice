@@ -77,7 +77,7 @@ class GAN(LightningModule):
         self.criterion = nn.BCELoss()
 
         self.automatic_optimization = False
-        self.fixed_noise = torch.randn(16, self.noise_dim)
+        self.fixed_noise = torch.randn(64, self.noise_dim)
 
     def forward(self, noise_vector):
         return self.generator(noise_vector)
