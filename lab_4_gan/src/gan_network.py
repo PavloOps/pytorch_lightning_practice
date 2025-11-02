@@ -3,7 +3,7 @@ from dataclasses import asdict
 import torch
 import torch.nn as nn
 from clearml import Task
-from lab_4_gan.config import CFG
+from ..config import CFG
 from lightning import LightningModule
 from torchvision.utils import make_grid
 

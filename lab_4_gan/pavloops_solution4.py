@@ -6,10 +6,10 @@ from clearml import Task
 from lightning import seed_everything
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
 
-from lab_4_gan.config import CFG
-from lab_4_gan.src.gan_network import GAN
-from lab_4_gan.src.mnist_data_module import MNISTLightning
-from lab_4_gan.src.mnist_trainer import create_trainer
+from config import CFG
+from src.gan_network import GAN
+from src.mnist_data_module import MNISTLightning
+from src.mnist_trainer import create_trainer
 
 
 def run_experiment(
