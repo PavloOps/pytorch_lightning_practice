@@ -1,11 +1,8 @@
 import contextlib
 import io
-import os
 from dataclasses import asdict
-from getpass import getpass
 
 from clearml import Task
-from dotenv import load_dotenv
 from lightning import seed_everything
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
 
@@ -13,23 +10,6 @@ from lab_4_gan.config import CFG
 from lab_4_gan.src.gan_network import GAN
 from lab_4_gan.src.mnist_data_module import MNISTLightning
 from lab_4_gan.src.mnist_trainer import create_trainer
-
-load_dotenv()
-
-
-def check_clearml_env():
-    required_env_vars = [
-        "CLEARML_WEB_HOST",
-        "CLEARML_API_HOST",
-        "CLEARML_FILES_HOST",
-        "CLEARML_API_ACCESS_KEY",
-        "CLEARML_API_SECRET_KEY",
-    ]
-
-    for var in [var for var in required_env_vars if os.getenv(var) is None]:
-        os.environ[var] = getpass(f"Enter {var}: ")
-    else:
-        print("All environment variables are set.")
 
 
 def run_experiment(
