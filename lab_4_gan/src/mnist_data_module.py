@@ -6,7 +6,7 @@ import torch
 import torch.utils.data as data
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
-from config import CFG
+from .config import CFG
 from lightning import LightningDataModule
 
 logging.basicConfig(
