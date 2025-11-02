@@ -1,7 +1,9 @@
 import torch
 import torch.nn as nn
+from clearml import Task
 from lab_4_gan.config import CFG
 from lightning import LightningModule
+from torchvision.utils import make_grid
 
 
 class Generator(nn.Module):
@@ -43,10 +45,11 @@ class Discriminator(nn.Module):
 
 
 class GAN(LightningModule):
-    def __init__(self, config: CFG):
+    def __init__(self, config: CFG, clearml_logger: Task.logger):
         super().__init__()
         self.save_hyperparameters()
         self.config = config
+        self.clearml_logger = clearml_logger
 
         self.batch_size = config.training.batch_size
         self.noise_dim = config.training.noise_dim
@@ -132,13 +135,23 @@ class GAN(LightningModule):
         self.log("val/loss_discriminator", loss_d, prog_bar=True, on_epoch=True)
         self.log("val/loss_generator", loss_g, prog_bar=True, on_epoch=True)
 
-        # if (
-        #     self.current_epoch
-        #     % self.config.get("training", {}).get("debug_samples_epoch", 1)
-        #     == 0
-        # ):
-        #     fake_images = self(self.fixed_noise.to(self.device))
-        #     fake_images = (fake_images + 1) / 2
-        #     # TODO: log fake_images in ClearML
-
         return {"val_loss": (loss_d + loss_g) / 2}
+
+    @torch.no_grad()
+    def on_validation_epoch_end(self):
+        if not self.current_epoch % self.config.trainer.debug_samples_epoch:
+
+            fake_images = self(self.fixed_noise.to(self.device))
+            fake_images = (fake_images + 1) / 2  # [-1, 1] → [0, 1]
+
+            grid = make_grid(fake_images, nrow=4, normalize=True)
+            np_image = grid.permute(1, 2, 0).cpu().numpy()
+
+            self.clearml_logger.report_image(
+                title="Generated Samples",
+                series="debug_samples",
+                iteration=self.current_epoch,
+                image=np_image,
+            )
+
+        return None

@@ -1,28 +1,55 @@
 import contextlib
 import io
+import os
 from dataclasses import asdict
+from getpass import getpass
 
-from lab_4_gan.config import CFG
-from lab_4_gan.src.mnist_trainer import create_trainer
-from lab_4_gan.src.gan_network import GAN
-from lab_4_gan.src.mnist_data_module import MNISTDataset, MNISTLightning
+from clearml import Task
+from dotenv import load_dotenv
 from lightning import seed_everything
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
 
+from lab_4_gan.config import CFG
+from lab_4_gan.src.gan_network import GAN
+from lab_4_gan.src.mnist_data_module import MNISTLightning
+from lab_4_gan.src.mnist_trainer import create_trainer
 
-def run_experiment(config, epoch=10, debug_samples_epoch=1, need_dev_run=True):
+load_dotenv()
+
+
+def check_clearml_env():
+    required_env_vars = [
+        "CLEARML_WEB_HOST",
+        "CLEARML_API_HOST",
+        "CLEARML_FILES_HOST",
+        "CLEARML_API_ACCESS_KEY",
+        "CLEARML_API_SECRET_KEY",
+    ]
+
+    for var in [var for var in required_env_vars if os.getenv(var) is None]:
+        os.environ[var] = getpass(f"Enter {var}: ")
+    else:
+        print("All environment variables are set.")
+
+
+def run_experiment(
+    config, clearml_logger, epoch=10, debug_samples_epoch=1, need_dev_run=True
+):
     seed_everything(config.general.seed)
     config.trainer.max_epochs = epoch
+    config.trainer.debug_samples_epoch = debug_samples_epoch
 
     dataset = MNISTLightning(config=config)
-    model = GAN(config=config)
+    model = GAN(config=config, clearml_logger=clearml_logger)
 
     if need_dev_run:
         try:
             with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(
-                    io.StringIO()
+                io.StringIO()
             ):
-                trainer = create_trainer(dir_path="./", config=config, fast_dev_run=True)
+                trainer = create_trainer(
+                    dir_path="./", config=config, fast_dev_run=True
+                )
                 trainer.fit(model, dataset)
             print("Debug run has been finished.")
         except (MisconfigurationException, RuntimeError, ValueError) as e:
@@ -37,4 +64,20 @@ def run_experiment(config, epoch=10, debug_samples_epoch=1, need_dev_run=True):
 
 if __name__ == "__main__":
     curr_config = CFG()
-    run_experiment(config=curr_config)
+    curr_config_dict = asdict(curr_config)
+
+    task = Task.init(
+        project_name="Машинное обучение с помощью ClearML и Pytorch Lighting",
+        task_name="Lab 4 GAN & Debug Pictures",
+        tags=["Lab4", "MNIST", "digits", "GAN"],
+    )
+
+    curr_clearml_logger = task.get_logger()
+
+    for sub_config_name in curr_config_dict:
+        task.connect(
+            mutable=curr_config_dict[sub_config_name],
+            name=sub_config_name,
+        )
+
+    run_experiment(config=curr_config, clearml_logger=curr_clearml_logger)
