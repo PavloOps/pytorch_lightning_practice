@@ -141,7 +141,7 @@ class GAN(LightningModule):
 
     @torch.no_grad()
     def on_validation_epoch_end(self):
-        if not self.current_epoch % self.config.trainer.debug_samples_epoch:
+        if not self.current_epoch % self.config.training.debug_samples_epoch:
 
             fake_images = self(self.fixed_noise.to(self.device))
             fake_images = (fake_images + 1) / 2  # [-1, 1] → [0, 1]
