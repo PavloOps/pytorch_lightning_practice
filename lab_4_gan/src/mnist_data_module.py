@@ -72,11 +72,21 @@ class MNISTLightning(LightningDataModule):
             self.dataset = data.TensorDataset(images, labels)
             logger.info("Dataset is loaded to RAM.")
 
-    def train_dataloader(self):
+    def train_dataloader(self, persistent_workers=True):
         return data.DataLoader(
             self.dataset,
             batch_size=self.config.training.batch_size,
             shuffle=True,
+            num_workers=os.cpu_count(),
+            pin_memory=True,
+            drop_last=True,
+        )
+
+    def val_dataloader(self, persistent_workers=True):
+        return data.DataLoader(
+            self.dataset,
+            batch_size=self.config.training.batch_size,
+            shuffle=False,
             num_workers=os.cpu_count(),
             pin_memory=True,
             drop_last=True,
