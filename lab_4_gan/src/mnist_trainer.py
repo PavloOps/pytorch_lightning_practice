@@ -3,7 +3,8 @@ from dataclasses import asdict
 
 from lab_4_gan.config import CFG
 from lightning import Trainer
-from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
+from lightning.pytorch.callbacks import (EarlyStopping, LearningRateMonitor,
+                                         ModelCheckpoint)
 
 
 def create_trainer(dir_path, config: CFG, fast_dev_run=False):
@@ -27,5 +28,6 @@ def create_trainer(dir_path, config: CFG, fast_dev_run=False):
                 save_top_k=3,
                 filename="gan-{epoch:02d}-{val_loss_generator:.4f}",
             ),
+            LearningRateMonitor(logging_interval="step"),
         ],
     )
