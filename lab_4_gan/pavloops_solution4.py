@@ -81,3 +81,5 @@ if __name__ == "__main__":
         )
 
     run_experiment(config=curr_config, clearml_logger=curr_clearml_logger)
+
+    task.close()
