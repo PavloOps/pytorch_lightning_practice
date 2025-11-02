@@ -6,6 +6,17 @@ from clearml import Task
 from .config import CFG
 from lightning import LightningModule
 from torchvision.utils import make_grid
+import torch.nn.init as init
+
+
+def init_weights(m):
+    if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d, nn.Linear)):
+        init.xavier_uniform_(m.weight)
+        if m.bias is not None:
+            nn.init.zeros_(m.bias)
+    elif isinstance(m, nn.BatchNorm2d):
+        nn.init.ones_(m.weight)
+        nn.init.zeros_(m.bias)
 
 
 class Generator(nn.Module):
@@ -37,6 +48,7 @@ class Discriminator(nn.Module):
             nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(128),
             nn.LeakyReLU(0.2, inplace=True),
+            nn.Dropout(0.3),
             nn.Flatten(),
             nn.Linear(128 * 7 * 7, 1),
             nn.Sigmoid(),
@@ -60,6 +72,8 @@ class GAN(LightningModule):
 
         self.generator = Generator(self.noise_dim)
         self.discriminator = Discriminator()
+        self.generator.apply(init_weights)
+        self.discriminator.apply(init_weights)
         self.criterion = nn.BCELoss()
 
         self.automatic_optimization = False
@@ -73,7 +87,7 @@ class GAN(LightningModule):
             self.generator.parameters(), lr=self.lr, betas=self.betas
         )
         opt_d = torch.optim.Adam(
-            self.discriminator.parameters(), lr=self.lr, betas=self.betas
+            self.discriminator.parameters(), lr=self.lr * 0.25, betas=(0.6, 0.999)
         )
         return [opt_g, opt_d], []
 
