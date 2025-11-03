@@ -2,11 +2,13 @@ from dataclasses import asdict
 
 import torch
 import torch.nn as nn
-from clearml import Task
-from .config import CFG
-from lightning import LightningModule
-from torchvision.utils import make_grid
 import torch.nn.init as init
+from clearml import Task
+from lightning import LightningModule
+from torchvision import transforms
+from torchvision.utils import make_grid
+
+from .config import CFG
 
 
 def init_weights(m):
@@ -77,7 +79,9 @@ class GAN(LightningModule):
         self.criterion = nn.BCELoss()
 
         self.automatic_optimization = False
-        self.fixed_noise = torch.randn(64, self.noise_dim)
+
+        self.fixed_noise = torch.randn(5, self.noise_dim)
+        self.resize_transform = transforms.Resize((128, 128))
 
     def forward(self, noise_vector):
         return self.generator(noise_vector)
@@ -155,13 +159,14 @@ class GAN(LightningModule):
 
     @torch.no_grad()
     def on_validation_epoch_end(self):
-        if not self.current_epoch % self.config.training.debug_samples_epoch:
+        if self.current_epoch % self.config.training.debug_samples_epoch == 0:
+            fake_images = self.generator(self.fixed_noise.to(self.device))
+            fake_images = (fake_images + 1) / 2  # [-1,1] → [0,1]
 
-            fake_images = self(self.fixed_noise.to(self.device))
-            fake_images = (fake_images + 1) / 2  # [-1, 1] → [0, 1]
-
-            grid = make_grid(fake_images, nrow=4, normalize=True)
-            np_image = grid.permute(1, 2, 0).cpu().numpy()
+            # 128×128
+            fake_images_resized = self.resize_transform(fake_images)
+            grid = make_grid(fake_images_resized, nrow=5, padding=4, normalize=False)
+            np_image = grid.cpu().numpy().transpose(1, 2, 0)
 
             self.clearml_logger.report_image(
                 title="Generated Samples",
@@ -169,5 +174,3 @@ class GAN(LightningModule):
                 iteration=self.current_epoch,
                 image=np_image,
             )
-
-        return None
