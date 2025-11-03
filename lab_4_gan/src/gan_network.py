@@ -52,7 +52,7 @@ class Discriminator(nn.Module):
             nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(128),
             nn.LeakyReLU(0.2, inplace=True),
-            nn.Dropout(0.3),
+            nn.Dropout(0.4),
             nn.Flatten(),
             nn.Linear(128 * 7 * 7, 1),
             nn.Sigmoid(),
@@ -93,7 +93,7 @@ class GAN(LightningModule):
             self.generator.parameters(), lr=self.lr, betas=self.betas
         )
         opt_d = torch.optim.Adam(
-            self.discriminator.parameters(), lr=self.lr * 0.5, betas=(0.6, 0.999)
+            self.discriminator.parameters(), lr=self.lr * 0.25, betas=(0.6, 0.999)
         )
         return [opt_g, opt_d], []
 
@@ -131,6 +131,10 @@ class GAN(LightningModule):
 
         self.log("train/loss_discriminator", loss_d, prog_bar=True)
         self.log("train/loss_generator", loss_g, prog_bar=True)
+        self.clearml_logger.report_scalar("Loss", "train_generator", loss_g.item(), self.global_step)
+        self.clearml_logger.report_scalar("Loss", "train_discriminator", loss_d.item(), self.global_step)
+
+        return {"train/loss": (loss_d + loss_g) / 2}
 
     @torch.no_grad()
     def validation_step(self, batch, batch_idx):
@@ -157,7 +161,10 @@ class GAN(LightningModule):
         self.log("val/loss_discriminator", loss_d, prog_bar=True, on_epoch=True)
         self.log("val/loss_generator", loss_g, prog_bar=True, on_epoch=True)
 
-        return {"val_loss": (loss_d + loss_g) / 2}
+        self.clearml_logger.report_scalar("Loss", "val_generator", loss_g.item(), self.global_step)
+        self.clearml_logger.report_scalar("Loss", "val_discriminator", loss_d.item(), self.global_step)
+
+        return {"val/loss": (loss_d + loss_g) / 2}
 
     @torch.no_grad()
     def on_validation_epoch_end(self):
