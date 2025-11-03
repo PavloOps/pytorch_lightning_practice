@@ -1,7 +1,13 @@
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parent / "src"))
+
 import contextlib
 import io
 from dataclasses import asdict
 
+import click
 import torch
 from clearml import Task
 from lightning import seed_everything
@@ -43,7 +49,18 @@ def run_experiment(
     dataset.teardown()
 
 
-if __name__ == "__main__":
+@click.command()
+@click.option(
+    "--fast_dev_run", "-f", is_flag=True, help="Firstly, run in fast development mode."
+)
+@click.option("--epoch", "-E", default=10, help="Number of epochs to train.")
+@click.option(
+    "--debug_samples_epoch",
+    "-D",
+    default=1,
+    help="Number of epochs to log debug pictures to ClearML.",
+)
+def cli(fast_dev_run, epoch, debug_samples_epoch):
     curr_config = CFG()
     curr_config_dict = asdict(curr_config)
 
@@ -51,7 +68,7 @@ if __name__ == "__main__":
         project_name="Машинное обучение с помощью ClearML и Pytorch Lighting",
         task_name="Lab 4 GAN & Debug Pictures",
         tags=["Lab4", "MNIST", "digits", "GAN"],
-        task_type=Task.TaskTypes.training
+        task_type=Task.TaskTypes.training,
     )
 
     task.running_locally()
@@ -64,11 +81,21 @@ if __name__ == "__main__":
             name=sub_config_name,
         )
 
-    print('torch version: ', torch.__version__)
-    print('cuda version: ', torch.version.cuda)
-    print('gpu is available: ', torch.cuda.is_available())
-    print('device name: ', torch.cuda.get_device_name(0))
+    print("torch version: ", torch.__version__)
+    print("cuda version: ", torch.version.cuda)
+    print("gpu is available: ", torch.cuda.is_available())
+    print("device name: ", torch.cuda.get_device_name(0))
 
-    run_experiment(config=curr_config, clearml_logger=curr_clearml_logger)
+    run_experiment(
+        config=curr_config,
+        clearml_logger=curr_clearml_logger,
+        need_dev_run=fast_dev_run,
+        debug_samples_epoch=debug_samples_epoch,
+        epoch=epoch,
+    )
 
     task.close()
+
+
+if __name__ == "__main__":
+    cli()
