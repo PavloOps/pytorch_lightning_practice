@@ -2,6 +2,7 @@ import contextlib
 import io
 from dataclasses import asdict
 
+import torch
 from clearml import Task
 from lightning import seed_everything
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
@@ -61,6 +62,11 @@ if __name__ == "__main__":
             mutable=curr_config_dict[sub_config_name],
             name=sub_config_name,
         )
+
+    print('torch version: ', torch.__version__)
+    print('cuda version: ', torch.version.cuda)
+    print('gpu is available: ', torch.cuda.is_available())
+    print('device name: ', torch.cuda.get_device_name(0))
 
     run_experiment(config=curr_config, clearml_logger=curr_clearml_logger)
 
