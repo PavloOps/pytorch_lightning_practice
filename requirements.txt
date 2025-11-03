@@ -8,10 +8,11 @@ pillow==11.3.0
 tqdm==4.67.1
 
 # === PyTorch + CUDA 11.8 (driver 11.4+) ===
-torch==2.2.2
-torchvision==0.17.2
-torchaudio==2.2.2
--f https://download.pytorch.org/whl/torch_stable.html
+torch==2.2.2+cu121
+torchvision==0.17.2+cu121
+torchmetrics==1.6.2
+torchview==0.2.6
+--extra-index-url https://download.pytorch.org/whl/cu121
 
 # === Lightning ecosystem ===
 lightning==2.5.0.post0
