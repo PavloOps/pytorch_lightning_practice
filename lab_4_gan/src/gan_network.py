@@ -10,6 +10,8 @@ from torchvision.utils import make_grid
 
 from .config import CFG
 
+torch.set_float32_matmul_precision("medium")
+
 
 def init_weights(m):
     if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d, nn.Linear)):
@@ -81,7 +83,7 @@ class GAN(LightningModule):
         self.automatic_optimization = False
 
         self.fixed_noise = torch.randn(5, self.noise_dim)
-        self.resize_transform = transforms.Resize((128, 128))
+        self.resize_transform = transforms.Resize((64, 64))
 
     def forward(self, noise_vector):
         return self.generator(noise_vector)
@@ -91,7 +93,7 @@ class GAN(LightningModule):
             self.generator.parameters(), lr=self.lr, betas=self.betas
         )
         opt_d = torch.optim.Adam(
-            self.discriminator.parameters(), lr=self.lr * 0.25, betas=(0.6, 0.999)
+            self.discriminator.parameters(), lr=self.lr * 0.5, betas=(0.6, 0.999)
         )
         return [opt_g, opt_d], []
 
@@ -132,24 +134,24 @@ class GAN(LightningModule):
 
     @torch.no_grad()
     def validation_step(self, batch, batch_idx):
-        # Use fixed noise
-        fake_images = self(self.fixed_noise.to(self.device))
-        fake_images = (fake_images + 1) / 2
-
         true_images = batch[0]
         batch_size = true_images.size(0)
+
+        noise = torch.randn(batch_size, self.noise_dim, device=self.device)
+        fake_images = self(noise)
+        fake_images = (fake_images + 1) / 2
 
         real_labels = torch.ones((batch_size, 1), device=self.device)
         fake_labels = torch.zeros((batch_size, 1), device=self.device)
 
         real_output = self.discriminator(true_images)
-        fake_output = self.discriminator(fake_images[:batch_size])
+        fake_output = self.discriminator(fake_images)
 
         loss_d_real = self.criterion(real_output, real_labels)
         loss_d_fake = self.criterion(fake_output, fake_labels)
         loss_d = (loss_d_real + loss_d_fake) / 2
 
-        fake_output_for_g = self.discriminator(fake_images[:batch_size])
+        fake_output_for_g = self.discriminator(fake_images)
         loss_g = self.criterion(fake_output_for_g, real_labels)
 
         self.log("val/loss_discriminator", loss_d, prog_bar=True, on_epoch=True)
