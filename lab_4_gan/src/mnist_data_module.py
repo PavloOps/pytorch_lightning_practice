@@ -6,7 +6,7 @@ import torch
 import torch.utils.data as data
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
-from .config import CFG
+from lab_4_gan.src.config import CFG
 from lightning import LightningDataModule
 
 logging.basicConfig(
@@ -38,7 +38,8 @@ class MNISTLightning(LightningDataModule):
         self.dataset_file_path = os.path.join(
             self.config.data.data_dir, self.config.data.file_name
         )
-        self.dataset = None
+        self.train_dataset = None
+        self.val_dataset = None
         self.transform = (
             transform
             if transform is not None
@@ -65,35 +66,46 @@ class MNISTLightning(LightningDataModule):
         else:
             logger.info("Processed dataset already exists — skipping download.")
 
-    def setup(self, stage):
-        if stage in ("fit", None):
-            loaded_data = torch.load(str(self.dataset_file_path))
-            images, labels = loaded_data["images"], loaded_data["labels"]
-            self.dataset = data.TensorDataset(images, labels)
-            logger.info("Dataset is loaded to RAM.")
+    def setup(self, stage=None):
+        loaded_data = torch.load(str(self.dataset_file_path))
+        images, labels = loaded_data["images"], loaded_data["labels"]
+        full_dataset = data.TensorDataset(images, labels)
 
-    def train_dataloader(self, persistent_workers=True):
+        if stage in ("fit", None):
+            train_size = int(0.8 * len(full_dataset))
+            val_size = len(full_dataset) - train_size
+            self.train_dataset, self.val_dataset = data.random_split(
+                full_dataset,
+                [train_size, val_size],
+                generator=torch.Generator().manual_seed(42),
+            )
+            logger.info("Train and validation datasets are loaded in RAM.")
+
+    def train_dataloader(self):
         return data.DataLoader(
-            self.dataset,
+            self.train_dataset,
             batch_size=self.config.training.batch_size,
             shuffle=True,
-            num_workers=os.cpu_count(),
+            num_workers=4,
             pin_memory=True,
             drop_last=True,
+            persistent_workers=True,
         )
 
-    def val_dataloader(self, persistent_workers=True):
+    def val_dataloader(self):
         return data.DataLoader(
-            self.dataset,
+            self.val_dataset,
             batch_size=self.config.training.batch_size,
             shuffle=False,
-            num_workers=os.cpu_count(),
+            num_workers=4,
             pin_memory=True,
             drop_last=True,
+            persistent_workers=True,
         )
 
     def teardown(self, stage=None):
-        self.dataset = None
+        self.train_dataset = None
+        self.val_dataset
         gc.collect()
 
 
