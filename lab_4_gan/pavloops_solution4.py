@@ -51,9 +51,10 @@ if __name__ == "__main__":
         project_name="Машинное обучение с помощью ClearML и Pytorch Lighting",
         task_name="Lab 4 GAN & Debug Pictures",
         tags=["Lab4", "MNIST", "digits", "GAN"],
+        task_type=Task.TaskTypes.training
     )
 
-    task.execute_remotely(queue_name="default")
+    task.running_locally()
 
     curr_clearml_logger = task.get_logger()
 
