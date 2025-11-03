@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass, field
+
 from torch.cuda import is_available
 
 
@@ -31,6 +32,7 @@ class DataConfig:
     data_dir: str = "../data"
     saved_models_dir: str = "saved_models"
     file_name: str = "dataset.pt"
+
 
 @dataclass
 class CFG:

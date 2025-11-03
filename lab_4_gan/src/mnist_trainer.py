@@ -1,10 +1,11 @@
 import os
 from dataclasses import asdict
 
-from .config import CFG
 from lightning import Trainer
 from lightning.pytorch.callbacks import (EarlyStopping, LearningRateMonitor,
                                          ModelCheckpoint)
+
+from .config import CFG
 
 
 def create_trainer(dir_path, config: CFG, fast_dev_run=False):
