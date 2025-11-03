@@ -105,7 +105,7 @@ class MNISTLightning(LightningDataModule):
 
     def teardown(self, stage=None):
         self.train_dataset = None
-        self.val_dataset
+        self.val_dataset = None
         gc.collect()
 
 

@@ -27,7 +27,7 @@ def create_trainer(dir_path, config: CFG, fast_dev_run=False):
                 mode="min",
                 dirpath=dir_path,
                 save_top_k=3,
-                filename="gan-{epoch:02d}-{val_loss_generator:.4f}",
+                filename="gan-{epoch:02d}-{val_loss:.4f}",
             ),
             LearningRateMonitor(logging_interval="step"),
         ],

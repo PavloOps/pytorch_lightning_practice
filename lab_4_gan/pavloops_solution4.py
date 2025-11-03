@@ -1,4 +1,6 @@
+import os
 import sys
+from getpass import getpass
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent / "src"))
@@ -17,6 +19,21 @@ from src.config import CFG
 from src.gan_network import GAN
 from src.mnist_data_module import MNISTLightning
 from src.mnist_trainer import create_trainer
+
+
+def check_clearml_env():
+    required_env_vars = [
+        "CLEARML_WEB_HOST",
+        "CLEARML_API_HOST",
+        "CLEARML_FILES_HOST",
+        "CLEARML_API_ACCESS_KEY",
+        "CLEARML_API_SECRET_KEY"
+    ]
+
+    for var in [var for var in required_env_vars if os.getenv(var) is None]:
+        os.environ[var] = getpass(f"Enter {var}: ")
+    else:
+        print("All environment variables are set.")
 
 
 def run_experiment(
@@ -51,7 +68,7 @@ def run_experiment(
 
 @click.command()
 @click.option(
-    "--fast_dev_run", "-f", is_flag=True, help="Firstly, run in fast development mode."
+    "--fast_dev_run", "-F", is_flag=True, help="Firstly, run in fast development mode."
 )
 @click.option("--epoch", "-E", default=10, help="Number of epochs to train.")
 @click.option(
@@ -61,6 +78,8 @@ def run_experiment(
     help="Number of epochs to log debug pictures to ClearML.",
 )
 def cli(fast_dev_run, epoch, debug_samples_epoch):
+    check_clearml_env()
+
     curr_config = CFG()
     curr_config_dict = asdict(curr_config)
 
