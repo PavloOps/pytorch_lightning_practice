@@ -27,7 +27,7 @@ def check_clearml_env():
         "CLEARML_API_HOST",
         "CLEARML_FILES_HOST",
         "CLEARML_API_ACCESS_KEY",
-        "CLEARML_API_SECRET_KEY"
+        "CLEARML_API_SECRET_KEY",
     ]
 
     for var in [var for var in required_env_vars if os.getenv(var) is None]:

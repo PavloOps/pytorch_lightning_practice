@@ -131,8 +131,12 @@ class GAN(LightningModule):
 
         self.log("train/loss_discriminator", loss_d, prog_bar=True)
         self.log("train/loss_generator", loss_g, prog_bar=True)
-        self.clearml_logger.report_scalar("Loss", "train_generator", loss_g.item(), self.global_step)
-        self.clearml_logger.report_scalar("Loss", "train_discriminator", loss_d.item(), self.global_step)
+        self.clearml_logger.report_scalar(
+            "Loss", "train_generator", loss_g.item(), self.global_step
+        )
+        self.clearml_logger.report_scalar(
+            "Loss", "train_discriminator", loss_d.item(), self.global_step
+        )
 
         return {"train/loss": (loss_d + loss_g) / 2}
 
@@ -161,8 +165,12 @@ class GAN(LightningModule):
         self.log("val/loss_discriminator", loss_d, prog_bar=True, on_epoch=True)
         self.log("val/loss_generator", loss_g, prog_bar=True, on_epoch=True)
 
-        self.clearml_logger.report_scalar("Loss", "val_generator", loss_g.item(), self.global_step)
-        self.clearml_logger.report_scalar("Loss", "val_discriminator", loss_d.item(), self.global_step)
+        self.clearml_logger.report_scalar(
+            "Loss", "val_generator", loss_g.item(), self.global_step
+        )
+        self.clearml_logger.report_scalar(
+            "Loss", "val_discriminator", loss_d.item(), self.global_step
+        )
 
         return {"val/loss": (loss_d + loss_g) / 2}
 
