@@ -153,4 +153,108 @@ simple_visualize_metrics(
 
 ## [Lab 4: GAN & PyTorch Lighting  🤗](lab_4_gan/pavloops_solution4.py) 
 
-In progress...
+Клонируй с гита:
+
+```bash
+git clone https://github.com/PavloOps/pytorch_lightning_practice.git && cd lab_4_gan
+```
+
+Запуск с терминала (в этот раз делала под Windows для разнообразия):
+
+```bash
+py pavloops_solution4.py -F -E 12 -D 2
+```
+
+Аналогичная команда с полными именами параметров:
+
+```bash
+py pavloops_solution4.py --fast_dev_run --epoch 12 --debug_samples_epoch 2
+```
+
+Результат в юайке ClearML:
+
+https://app.clear.ml/projects/a7f426d19f9f493980c13330e8aa07b6/experiments/afc67674c8b34197b32644a0ff02324a/output/execution
+
+Мои логи:
+
+```
+$ py pavloops_solution4.py -F -E 12 -D 2
+Enter CLEARML_WEB_HOST:
+Enter CLEARML_API_HOST:
+Enter CLEARML_FILES_HOST:
+Enter CLEARML_API_ACCESS_KEY:
+Enter CLEARML_API_SECRET_KEY:
+All environment variables are set.
+ClearML Task: created new task id=afc67674c8b34197b32644a0ff02324a
+ClearML results page: https://app.clear.ml/projects/a7f426d19f9f493980c13330e8aa07b6/experiments/afc67674c8b34197b32644a0ff02324a/output/log
+torch version:  2.2.2+cu121
+cuda version:  12.1
+gpu is available:  True
+device name:  NVIDIA GeForce RTX 3080 Ti Laptop GPU
+Seed set to 2025
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+HPU available: False, using: 0 HPUs
+Running in `fast_dev_run` mode: will run the requested loop using 1 batch(es). Logging and checkpointing is suppressed.
+[2025-Nov-03 14:41:53] INFO: Processed dataset not found — downloading raw MNIST...
+[2025-Nov-03 14:42:23] INFO: Processed MNIST saved to ../data\dataset.pt
+[2025-Nov-03 14:42:29] INFO: Train and validation datasets are loaded in RAM.
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+  | Name             | Type          | Params | Mode
+-----------------------------------------------------------
+0 | generator        | Generator     | 1.8 M  | train
+1 | discriminator    | Discriminator | 138 K  | train
+2 | criterion        | BCELoss       | 0      | train
+3 | resize_transform | Resize        | 0      | train
+-----------------------------------------------------------
+1.9 M     Trainable params
+0         Non-trainable params
+1.9 M     Total params
+7.729     Total estimated model params size (MB)
+23        Modules in train mode
+0         Modules in eval mode
+`Trainer.fit` stopped: `max_steps=1` reached.
+Debug run has been finished.
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+HPU available: False, using: 0 HPUs
+[2025-Nov-03 14:43:08] INFO: Processed dataset already exists — skipping download.
+2025-11-03 14:43:14,263 - clearml.model - WARNING - Connecting multiple input models with the same name: `dataset`. This might result in the wrong model being used when executing remotely
+[2025-Nov-03 14:43:19] INFO: Train and validation datasets are loaded in RAM.
+C:\Users\olgal\PycharmProjects\pytorch_lightning_practice\.venv\Lib\site-packages\lightning\pytorch\callbacks\model_checkpoint.py:654: UserWarning:
+
+Checkpoint directory C:\Users\olgal\PycharmProjects\pytorch_lightning_practice\lab_4_gan exists and is not empty.
+
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+  | Name             | Type          | Params | Mode
+-----------------------------------------------------------
+0 | generator        | Generator     | 1.8 M  | train
+1 | discriminator    | Discriminator | 138 K  | train
+2 | criterion        | BCELoss       | 0      | train
+3 | resize_transform | Resize        | 0      | train
+-----------------------------------------------------------
+1.9 M     Trainable params
+0         Non-trainable params
+1.9 M     Total params
+7.729     Total estimated model params size (MB)
+23        Modules in train mode
+0         Modules in eval mode
+Epoch 1: 100%|███████████████████████████████████████████████████████████████████████████████████| 750/750 [00:08<00:00, 89.48it/s, v_num=0, train/loss_discriminator=0.457, train/loss_generator=1.120]Metric val/loss_generator improved. New best score: 14.148████████████████████████████████████████████████████████████████████████████████████████████████████████████| 187/187 [00:00<00:00, 222.88it/s] 
+Epoch 11: 100%|█████████████████████████| 750/750 [00:13<00:00, 57.55it/s, v_num=0, train/loss_discriminator=0.169, train/loss_generator=2.520, val/loss_discriminator=0.0986, val/loss_generator=21.80]Monitored metric val/loss_generator did not improve in the last 5 records. Best score: 14.148. Signaling Trainer to stop.██████████████████████████████████████████████| 187/187 [00:01<00:00, 94.11it/s]
+Epoch 11: 100%|█████████████████████████| 750/750 [00:15<00:00, 49.78it/s, v_num=0, train/loss_discriminator=0.169, train/loss_generator=2.520, val/loss_discriminator=0.0951, val/loss_generator=22.50]`Trainer.fit` stopped: `max_epochs=12` reached.
+Epoch 11: 100%|█████████████████████████| 750/750 [00:15<00:00, 49.78it/s, v_num=0, train/loss_discriminator=0.169, train/loss_generator=2.520, val/loss_discriminator=0.0951, val/loss_generator=22.50] 
+
+olgal@DESKTOP-CH6JPSI MINGW64 ~/PycharmProjects/pytorch_lightning_practice/lab_4_gan (main)
+```
+
+Прогресс генератора можно посмотреть в ClearML: debug samples -> Generated Samples, --all, но можно и тут :)
+
+![img.png](lab_4_gan/generated_samples/img.png)<br>
+![img_1.png](lab_4_gan/generated_samples/img_1.png)<br>
+![img_2.png](lab_4_gan/generated_samples/img_2.png)<br>
+![img_3.png](lab_4_gan/generated_samples/img_3.png)<br>
+![img_4.png](lab_4_gan/generated_samples/img_4.png)<br>
+![img_5.png](lab_4_gan/generated_samples/img_5.png)<br>
+![img_6.png](lab_4_gan/generated_samples/img_6.png)

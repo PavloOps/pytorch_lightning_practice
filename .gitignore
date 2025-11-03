@@ -1,3 +1,5 @@
 /.idea
 /.venv
 /lab_4_gan/src/data/
+/data/
+gan*.ckpt
