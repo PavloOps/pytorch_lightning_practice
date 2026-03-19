@@ -3,3 +3,4 @@
 /lab_4_gan/src/data/
 /data/
 gan*.ckpt
+/final_project/lightning_logs/
