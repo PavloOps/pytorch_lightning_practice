@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
 import pandas as pd
 import torch
+from final_project.src.config import DataConfig
 from torch.utils.data import Dataset
 
-
 MISSING_TOKEN = "__MISSING__"
+DEFAULT_DATA_CONFIG = DataConfig()
 
 
 @dataclass
@@ -19,19 +19,6 @@ class NumericStats:
 
 
 class TwoTowerDataset(Dataset):
-    """
-    Minimal Dataset for pointwise Two-Tower training on tabular interactions.
-
-    Output format for each sample:
-    {
-        "user_cat": LongTensor [n_user_cat],
-        "user_num": FloatTensor [n_user_num],
-        "item_cat": LongTensor [n_item_cat],
-        "item_num": FloatTensor [n_item_num],
-        "label":    FloatTensor []   # if label_col is present
-    }
-    """
-
     def __init__(
         self,
         frame: pd.DataFrame,
@@ -45,10 +32,26 @@ class TwoTowerDataset(Dataset):
         fit: bool = False,
         add_month_feature: bool = True,
     ) -> None:
-        self.user_cat_cols = user_cat_cols or ["user_id"]
-        self.item_cat_cols = item_cat_cols or ["item_id", "brand", "category", "country", "inn", "owner"]
-        self.user_num_cols = user_num_cols or ["user_total_cnt", "user_unique_items"]
-        self.item_num_cols = item_num_cols or ["avg_price"]
+        self.user_cat_cols = (
+            list(user_cat_cols)
+            if user_cat_cols is not None
+            else list(DEFAULT_DATA_CONFIG.user_cat_cols)
+        )
+        self.item_cat_cols = (
+            list(item_cat_cols)
+            if item_cat_cols is not None
+            else list(DEFAULT_DATA_CONFIG.item_cat_cols)
+        )
+        self.user_num_cols = (
+            list(user_num_cols)
+            if user_num_cols is not None
+            else list(DEFAULT_DATA_CONFIG.user_num_cols)
+        )
+        self.item_num_cols = (
+            list(item_num_cols)
+            if item_num_cols is not None
+            else list(DEFAULT_DATA_CONFIG.item_num_cols)
+        )
         self.label_col = label_col
         self.add_month_feature = add_month_feature
 
@@ -63,7 +66,9 @@ class TwoTowerDataset(Dataset):
             self.numeric_stats = self._fit_numeric_stats(self.df, self.num_cols)
         else:
             if category_maps is None or numeric_stats is None:
-                raise ValueError("For fit=False, provide both category_maps and numeric_stats.")
+                raise ValueError(
+                    "For fit=False, provide both category_maps and numeric_stats."
+                )
             self.category_maps = category_maps
             self.numeric_stats = numeric_stats
 
@@ -74,10 +79,14 @@ class TwoTowerDataset(Dataset):
 
         self.label_tensor = None
         if self.label_col in self.df.columns:
-            self.label_tensor = torch.tensor(self.df[self.label_col].astype("float32").values, dtype=torch.float32)
+            self.label_tensor = torch.tensor(
+                self.df[self.label_col].astype("float32").values, dtype=torch.float32
+            )
 
     @staticmethod
-    def _fit_category_maps(df: pd.DataFrame, cols: Iterable[str]) -> Dict[str, Dict[str, int]]:
+    def _fit_category_maps(
+        df: pd.DataFrame, cols: Iterable[str]
+    ) -> Dict[str, Dict[str, int]]:
         maps: Dict[str, Dict[str, int]] = {}
         for col in cols:
             values = (
@@ -92,7 +101,9 @@ class TwoTowerDataset(Dataset):
         return maps
 
     @staticmethod
-    def _fit_numeric_stats(df: pd.DataFrame, cols: Iterable[str]) -> Dict[str, NumericStats]:
+    def _fit_numeric_stats(
+        df: pd.DataFrame, cols: Iterable[str]
+    ) -> Dict[str, NumericStats]:
         stats: Dict[str, NumericStats] = {}
         for col in cols:
             series = pd.to_numeric(df[col], errors="coerce")
@@ -104,8 +115,17 @@ class TwoTowerDataset(Dataset):
         return stats
 
     def _prepare_month_feature(self) -> None:
-        if self.add_month_feature and "year_month" in self.df.columns and "month" not in self.df.columns:
-            self.df["month"] = pd.to_numeric(self.df["year_month"], errors="coerce").fillna(0).astype(int) % 100
+        if (
+            self.add_month_feature
+            and "year_month" in self.df.columns
+            and "month" not in self.df.columns
+        ):
+            self.df["month"] = (
+                pd.to_numeric(self.df["year_month"], errors="coerce")
+                .fillna(0)
+                .astype(int)
+                % 100
+            )
             if "month" not in self.user_num_cols:
                 self.user_num_cols = [*self.user_num_cols, "month"]
 
@@ -136,7 +156,11 @@ class TwoTowerDataset(Dataset):
             if col not in self.df.columns:
                 raise KeyError(f"Missing numeric column: {col}")
             stat = self.numeric_stats[col]
-            values = pd.to_numeric(self.df[col], errors="coerce").fillna(stat.mean).astype("float32")
+            values = (
+                pd.to_numeric(self.df[col], errors="coerce")
+                .fillna(stat.mean)
+                .astype("float32")
+            )
             normed = (values - stat.mean) / stat.std
             encoded_columns.append(torch.tensor(normed.values, dtype=torch.float32))
 
@@ -182,10 +206,18 @@ class TwoTowerDataset(Dataset):
 
 
 if __name__ == "__main__":
-    dataset = TwoTowerDataset.from_csv(str("/home/pavloops/PycharmProjects/pytorch_lightning_practice/final_project/data/train_example.csv"), fit=True)
+    dataset = TwoTowerDataset.from_csv(
+        str(
+            "/home/pavloops/PycharmProjects/pytorch_lightning_practice/final_project/data/train_example.csv"
+        ),
+        fit=True,
+    )
     first = dataset[0]
 
     print(f"Dataset length: {len(dataset)}")
     print("First train sample:")
     for key, value in first.items():
-        print(f"  {key}: shape={tuple(value.shape)}, dtype={value.dtype}, value={value}")
+        print(
+            f"  {key}: shape={tuple(value.shape)}, dtype={value.dtype}, value={value}"
+        )
+    print(dataset.cardinalities)
