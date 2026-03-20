@@ -50,7 +50,7 @@ class DataConfig:
     drop_last: bool = False
     pin_memory: bool = True
     persistent_workers: bool = True
-    user_cat_cols: tuple[str, ...] = ("user_id",)
+    user_cat_cols: tuple[str, ...] = ("user_id", "region", "city")
     item_cat_cols: tuple[str, ...] = (
         "item_id",
         "brand",

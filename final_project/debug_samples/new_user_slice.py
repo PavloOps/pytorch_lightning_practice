@@ -6,7 +6,11 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from util import normalize_string_column, prepare_output_path, print_stats
+from final_project.debug_samples.util import (
+    normalize_string_column,
+    prepare_output_path,
+    print_stats,
+)
 
 
 @dataclass(frozen=True)
@@ -94,9 +98,9 @@ def _build_outputs(
 
 
 if __name__ == "__main__":
-    input_path = Path("/home/pavloops/PycharmProjects/pytorch_lightning_practice/final_project/data/dataset.csv")
-    out_ids = prepare_output_path("/home/pavloops/PycharmProjects/pytorch_lightning_practice/final_project/data/new_user_ids.csv")
-    out_eval = prepare_output_path("/home/pavloops/PycharmProjects/pytorch_lightning_practice/final_project/data/new_user_eval_slice.csv")
+    input_path = Path("/final_project/data/archive/dataset.csv")
+    out_ids = prepare_output_path("/final_project/data/archive/new_user_ids.csv")
+    out_eval = prepare_output_path("/final_project/data/archive/new_user_eval_slice.csv")
 
     source_df = pd.read_csv(input_path)
     new_user_ids_df, new_user_eval_df = build_new_user_slice(

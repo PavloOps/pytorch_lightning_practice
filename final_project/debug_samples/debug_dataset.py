@@ -6,7 +6,11 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from util import ensure_columns, prepare_output_path, print_stats
+from final_project.debug_samples.util import (
+    ensure_columns,
+    prepare_output_path,
+    print_stats,
+)
 
 
 @dataclass(frozen=True)
@@ -31,6 +35,8 @@ class DebugColumnConfig:
     month: str = "year_month"
     count: str = "cnt"
     category: str | None = "category"
+    region: str | None = None
+    city: str | None = None
 
 
 @dataclass(frozen=True)
@@ -44,10 +50,16 @@ class DebugThresholds:
 
 @dataclass(frozen=True)
 class CandidatePools:
+    city_to_items: dict[tuple[object, ...], list[str]]
+    region_to_items: dict[tuple[object, ...], list[str]]
     month_to_items: dict[int, list[str]]
+    city_to_popular: dict[tuple[object, ...], list[str]]
+    region_to_popular: dict[tuple[object, ...], list[str]]
     month_to_popular: dict[int, list[str]]
-    user_month_positives: dict[tuple[str, int], set[str]]
+    query_positives: dict[tuple[object, ...], set[str]]
     item_to_category: dict[str, str]
+    category_city_to_items: dict[tuple[object, ...], list[str]]
+    category_region_to_items: dict[tuple[object, ...], list[str]]
     category_month_to_items: dict[tuple[int, str], list[str]]
     all_items: list[str]
 
@@ -62,6 +74,8 @@ def build_debug_dataset(
     month_col: str = "year_month",
     count_col: str = "cnt",
     category_col: str | None = "category",
+    region_col: str | None = None,
+    city_col: str | None = None,
 ) -> pd.DataFrame:
     """
     Build a stratified debug set for recommender training diagnostics.
@@ -93,6 +107,8 @@ def build_debug_dataset(
         month=month_col,
         count=count_col,
         category=category_col,
+        region=region_col,
+        city=city_col,
     )
     _validate_config(cfg, columns.category, df.columns)
 
@@ -125,12 +141,17 @@ def _prepare_positive_interactions(df: pd.DataFrame, columns: DebugColumnConfig)
     ensure_columns(
         df=df,
         required=[columns.user, columns.item, columns.month, columns.count],
-        optional=[columns.category] if columns.category else [],
+        optional=[
+            col
+            for col in [columns.category, columns.region, columns.city]
+            if col is not None
+        ],
     )
 
     selected_columns = [columns.user, columns.item, columns.month, columns.count]
-    if columns.category:
-        selected_columns.append(columns.category)
+    for column in [columns.category, columns.region, columns.city]:
+        if column:
+            selected_columns.append(column)
 
     work = df[selected_columns].copy()
     work[columns.user] = work[columns.user].astype(str)
@@ -142,6 +163,9 @@ def _prepare_positive_interactions(df: pd.DataFrame, columns: DebugColumnConfig)
 
     if columns.category:
         work[columns.category] = work[columns.category].fillna("UNKNOWN").astype(str)
+    for column in [columns.region, columns.city]:
+        if column:
+            work[column] = work[column].fillna("UNKNOWN").astype(str)
 
     positives = work.loc[work[columns.count] > 0].copy()
     if positives.empty:
@@ -247,24 +271,63 @@ def _attach_stratum_flags(sampled: pd.DataFrame, thresholds: DebugThresholds) ->
 
 
 def _build_candidate_pools(positives: pd.DataFrame, columns: DebugColumnConfig) -> CandidatePools:
+    city_group_cols = [col for col in [columns.month, columns.region, columns.city] if col]
+    region_group_cols = [col for col in [columns.month, columns.region] if col]
+
+    city_to_items: dict[tuple[object, ...], list[str]] = {}
+    region_to_items: dict[tuple[object, ...], list[str]] = {}
+    city_to_popular: dict[tuple[object, ...], list[str]] = {}
+    region_to_popular: dict[tuple[object, ...], list[str]] = {}
+
+    if city_group_cols:
+        city_to_items = (
+            positives.groupby(city_group_cols)[columns.item]
+            .apply(lambda series: sorted(set(series.astype(str).tolist())))
+            .to_dict()
+        )
+    if region_group_cols:
+        region_to_items = (
+            positives.groupby(region_group_cols)[columns.item]
+            .apply(lambda series: sorted(set(series.astype(str).tolist())))
+            .to_dict()
+        )
+
     month_to_items = (
         positives.groupby(columns.month)[columns.item]
         .apply(lambda series: sorted(set(series.astype(str).tolist())))
         .to_dict()
     )
+    if city_group_cols:
+        city_popularity = (
+            positives.groupby([*city_group_cols, columns.item], as_index=False)[columns.count]
+            .sum()
+            .sort_values([*city_group_cols, columns.count], ascending=[*[True] * len(city_group_cols), False])
+        )
+        city_to_popular = city_popularity.groupby(city_group_cols)[columns.item].apply(list).to_dict()
+    if region_group_cols:
+        region_popularity = (
+            positives.groupby([*region_group_cols, columns.item], as_index=False)[columns.count]
+            .sum()
+            .sort_values([*region_group_cols, columns.count], ascending=[*[True] * len(region_group_cols), False])
+        )
+        region_to_popular = (
+            region_popularity.groupby(region_group_cols)[columns.item].apply(list).to_dict()
+        )
     month_item_popularity = (
         positives.groupby([columns.month, columns.item], as_index=False)[columns.count]
         .sum()
         .sort_values([columns.month, columns.count], ascending=[True, False])
     )
     month_to_popular = month_item_popularity.groupby(columns.month)[columns.item].apply(list).to_dict()
-    user_month_positives = (
-        positives.groupby([columns.user, columns.month])[columns.item]
+    query_positives = (
+        positives.groupby(_query_key_columns(columns))[columns.item]
         .apply(lambda series: set(series.astype(str).tolist()))
         .to_dict()
     )
 
     item_to_category: dict[str, str] = {}
+    category_city_to_items: dict[tuple[object, ...], list[str]] = {}
+    category_region_to_items: dict[tuple[object, ...], list[str]] = {}
     category_month_to_items: dict[tuple[int, str], list[str]] = {}
     if columns.category:
         item_to_category = (
@@ -272,6 +335,18 @@ def _build_candidate_pools(positives: pd.DataFrame, columns: DebugColumnConfig) 
             .agg(lambda series: series.mode().iloc[0] if not series.mode().empty else "UNKNOWN")
             .to_dict()
         )
+        if city_group_cols:
+            category_city_to_items = (
+                positives.groupby([*city_group_cols, columns.category])[columns.item]
+                .apply(lambda series: sorted(set(series.astype(str).tolist())))
+                .to_dict()
+            )
+        if region_group_cols:
+            category_region_to_items = (
+                positives.groupby([*region_group_cols, columns.category])[columns.item]
+                .apply(lambda series: sorted(set(series.astype(str).tolist())))
+                .to_dict()
+            )
         category_month_to_items = (
             positives.groupby([columns.month, columns.category])[columns.item]
             .apply(lambda series: sorted(set(series.astype(str).tolist())))
@@ -279,10 +354,16 @@ def _build_candidate_pools(positives: pd.DataFrame, columns: DebugColumnConfig) 
         )
 
     return CandidatePools(
+        city_to_items=city_to_items,
+        region_to_items=region_to_items,
         month_to_items=month_to_items,
+        city_to_popular=city_to_popular,
+        region_to_popular=region_to_popular,
         month_to_popular=month_to_popular,
-        user_month_positives=user_month_positives,
+        query_positives=query_positives,
         item_to_category=item_to_category,
+        category_city_to_items=category_city_to_items,
+        category_region_to_items=category_region_to_items,
         category_month_to_items=category_month_to_items,
         all_items=positives[columns.item].astype(str).drop_duplicates().tolist(),
     )
@@ -340,21 +421,45 @@ def _build_candidates_for_row(
     n_random: int,
     total_candidates: int,
 ) -> list[str]:
-    user_id = getattr(row, columns.user)
     month = int(getattr(row, columns.month))
     target_item = getattr(row, columns.item)
+    region = getattr(row, columns.region) if columns.region else None
+    city = getattr(row, columns.city) if columns.city else None
 
-    month_items = set(pools.month_to_items.get(month, []))
+    month_items = set(
+        _resolve_with_geo_fallback(
+            month=month,
+            region=region,
+            city=city,
+            city_pool=pools.city_to_items,
+            region_pool=pools.region_to_items,
+            month_pool=pools.month_to_items,
+        )
+    )
     if not month_items:
         month_items = set(pools.all_items or positives[columns.item].astype(str).unique().tolist())
 
-    excluded = set(pools.user_month_positives.get((user_id, month), set()))
+    query_key = _row_query_key(row=row, columns=columns)
+    excluded = set(pools.query_positives.get(query_key, set()))
     excluded.add(target_item)
     allowed = list(month_items - excluded)
 
-    popular_pool = [item for item in pools.month_to_popular.get(month, []) if item not in excluded]
+    popular_pool = [
+        item
+        for item in _resolve_with_geo_fallback(
+            month=month,
+            region=region,
+            city=city,
+            city_pool=pools.city_to_popular,
+            region_pool=pools.region_to_popular,
+            month_pool=pools.month_to_popular,
+        )
+        if item not in excluded
+    ]
     same_category_pool = _get_same_category_pool(
         month=month,
+        region=region,
+        city=city,
         target_item=target_item,
         excluded=excluded,
         pools=pools,
@@ -379,6 +484,8 @@ def _build_candidates_for_row(
 
 def _get_same_category_pool(
     month: int,
+    region: object,
+    city: object,
     target_item: str,
     excluded: set[str],
     pools: CandidatePools,
@@ -388,6 +495,14 @@ def _get_same_category_pool(
         return []
 
     category = pools.item_to_category.get(target_item, "UNKNOWN")
+    city_items = pools.category_city_to_items.get((month, region, city, category), [])
+    if city_items:
+        return [item for item in city_items if item not in excluded]
+
+    region_items = pools.category_region_to_items.get((month, region, category), [])
+    if region_items:
+        return [item for item in region_items if item not in excluded]
+
     return [
         item
         for item in pools.category_month_to_items.get((month, category), [])
@@ -403,11 +518,16 @@ def _extend_unique(target: list[str], used: set[str], candidates: list[str]) -> 
 
 
 def _select_output_columns(sampled: pd.DataFrame, columns: DebugColumnConfig) -> pd.DataFrame:
-    out = sampled[
+    selected_columns = [
+        "stratum",
+        columns.user,
+        columns.month,
+    ]
+    for column in [columns.region, columns.city]:
+        if column:
+            selected_columns.append(column)
+    selected_columns.extend(
         [
-            "stratum",
-            columns.user,
-            columns.month,
             "target_item_id",
             "candidates",
             "candidate_count",
@@ -422,9 +542,44 @@ def _select_output_columns(sampled: pd.DataFrame, columns: DebugColumnConfig) ->
             "is_ambiguous_user",
             "is_easy_control",
         ]
-    ].copy()
+    )
+    out = sampled[selected_columns].copy()
     out.insert(0, "debug_id", [f"dbg_{index:05d}" for index in range(1, len(out) + 1)])
     return out.reset_index(drop=True)
+
+
+def _query_key_columns(columns: DebugColumnConfig) -> list[str]:
+    query_columns = [columns.user, columns.month]
+    for column in [columns.region, columns.city]:
+        if column:
+            query_columns.append(column)
+    return query_columns
+
+
+def _row_query_key(row: object, columns: DebugColumnConfig) -> tuple[object, ...]:
+    return tuple(getattr(row, column) for column in _query_key_columns(columns))
+
+
+def _resolve_with_geo_fallback(
+    month: int,
+    region: object,
+    city: object,
+    city_pool: dict[tuple[object, ...], list[str]],
+    region_pool: dict[tuple[object, ...], list[str]],
+    month_pool: dict[object, list[str]] | dict[tuple[object, ...], list[str]],
+) -> list[str]:
+    city_items = city_pool.get((month, region, city), [])
+    if city_items:
+        return city_items
+
+    region_items = region_pool.get((month, region), [])
+    if region_items:
+        return region_items
+
+    month_items = month_pool.get((month,), [])
+    if month_items:
+        return month_items
+    return month_pool.get(month, [])
 
 
 def _prior_unique_count(series: pd.Series) -> pd.Series:
@@ -467,12 +622,12 @@ def _validate_config(cfg: DebugSetConfig, category_col: str | None, columns: pd.
 
 
 if __name__ == "__main__":
-    input_path = Path("/home/pavloops/PycharmProjects/pytorch_lightning_practice/final_project/data/dataset.csv")
-    output_path = Path("/home/pavloops/PycharmProjects/pytorch_lightning_practice/final_project/data/debug_dataset.csv")
+    input_path = Path("/final_project/data/archive/dataset.csv")
+    output_path = Path("/final_project/data/archive/debug_dataset.csv")
 
     source_df = pd.read_csv(
         input_path,
-        usecols=["user_id", "item_id", "year_month", "cnt", "category"],
+        usecols=["user_id", "item_id", "year_month", "cnt", "category", "region", "city"],
     )
     debug_df = build_debug_dataset(
         df=source_df,
@@ -484,6 +639,8 @@ if __name__ == "__main__":
         month_col="year_month",
         count_col="cnt",
         category_col="category",
+        region_col="region",
+        city_col="city",
     )
 
     output_path = prepare_output_path(output_path)

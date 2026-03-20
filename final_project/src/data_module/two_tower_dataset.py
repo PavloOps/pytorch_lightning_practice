@@ -83,6 +83,16 @@ class TwoTowerDataset(Dataset):
                 self.df[self.label_col].astype("float32").values, dtype=torch.float32
             )
 
+        self.item_id_tensor = None
+        if "item_id" in self.df.columns:
+            self.item_id_tensor = torch.tensor(
+                pd.to_numeric(self.df["item_id"], errors="coerce")
+                .fillna(-1)
+                .astype("int64")
+                .values,
+                dtype=torch.long,
+            )
+
     @staticmethod
     def _fit_category_maps(
         df: pd.DataFrame, cols: Iterable[str]
@@ -178,6 +188,8 @@ class TwoTowerDataset(Dataset):
             "item_cat": self.item_cat_tensor[idx],
             "item_num": self.item_num_tensor[idx],
         }
+        if self.item_id_tensor is not None:
+            sample["item_id"] = self.item_id_tensor[idx]
         if self.label_tensor is not None:
             sample["label"] = self.label_tensor[idx]
         return sample

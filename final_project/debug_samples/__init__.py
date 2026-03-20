@@ -1,5 +1,5 @@
-from debug_samples.debug_dataset import DebugSetConfig, build_debug_dataset
-from debug_samples.new_user_slice import NewUserSliceConfig, build_new_user_slice
+from final_project.debug_samples.debug_dataset import DebugSetConfig, build_debug_dataset
+from final_project.debug_samples.new_user_slice import NewUserSliceConfig, build_new_user_slice
 
 __all__ = [
     "DebugSetConfig",
