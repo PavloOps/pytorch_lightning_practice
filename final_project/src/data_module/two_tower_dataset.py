@@ -93,6 +93,17 @@ class TwoTowerDataset(Dataset):
                 dtype=torch.long,
             )
 
+        self.query_id_tensor = None
+        query_cols = [
+            col for col in ("user_id", "year_month", "region", "city") if col in self.df.columns
+        ]
+        if query_cols:
+            query_codes, _ = pd.factorize(
+                self.df[query_cols].astype(str).agg("||".join, axis=1),
+                sort=False,
+            )
+            self.query_id_tensor = torch.tensor(query_codes, dtype=torch.long)
+
     @staticmethod
     def _fit_category_maps(
         df: pd.DataFrame, cols: Iterable[str]
@@ -190,6 +201,8 @@ class TwoTowerDataset(Dataset):
         }
         if self.item_id_tensor is not None:
             sample["item_id"] = self.item_id_tensor[idx]
+        if self.query_id_tensor is not None:
+            sample["query_id"] = self.query_id_tensor[idx]
         if self.label_tensor is not None:
             sample["label"] = self.label_tensor[idx]
         return sample
