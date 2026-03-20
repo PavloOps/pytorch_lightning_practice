@@ -38,8 +38,8 @@ class TrainingConfig:
 @dataclass
 class DataConfig:
     data_dir: str = "final_project/data"
-    train_file_name: str = "train_example.csv"
-    val_file_name: str | None = None
+    train_file_name: str = "train_dataset_prepared.csv"
+    val_file_name: str | None = "valid_dataset_prepared.csv"
     test_file_name: str | None = None
     batch_size: int = 1024
     num_workers: int = 4
@@ -94,6 +94,33 @@ class CallbacksConfig:
 
 
 @dataclass
+class ClearMLConfig:
+    enabled: bool = True
+    project_name: str = "RecSys / Two Tower"
+    task_name: str = "two-tower-training"
+    tags: list[str] = field(default_factory=lambda: ["recsys", "two-tower", "training"])
+    reuse_last_task_id: bool = False
+    continue_last_task: bool = False
+    output_uri: str | bool | None = None
+    prompt_missing_credentials: bool = True
+    connect_full_config: bool = True
+    log_dataset_preview: bool = True
+    dataset_preview_rows: int = 20
+    upload_best_checkpoint: bool = True
+
+
+@dataclass
+class DebugEvalConfig:
+    enabled: bool = True
+    raw_train_path: str | None = None
+    per_case: int = 25
+    candidates_per_sample: int = 100
+    seed: int = 42
+    preview_rows: int = 20
+    report_top_cases: int = 20
+
+
+@dataclass
 class CFG:
     general: GeneralConfig = field(default_factory=GeneralConfig)
     trainer: TrainerConfig = field(default_factory=TrainerConfig)
@@ -103,3 +130,5 @@ class CFG:
     metrics: MetricsConfig = field(default_factory=MetricsConfig)
     optimization: OptimizationConfig = field(default_factory=OptimizationConfig)
     callbacks: CallbacksConfig = field(default_factory=CallbacksConfig)
+    clearml: ClearMLConfig = field(default_factory=ClearMLConfig)
+    debug_eval: DebugEvalConfig = field(default_factory=DebugEvalConfig)

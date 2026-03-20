@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict
 from pathlib import Path
+from typing import Any
 
 from lightning import Trainer
 from lightning.pytorch.callbacks import (
@@ -16,12 +17,14 @@ from lightning.pytorch.callbacks import (
 from lightning.pytorch.loggers import CSVLogger
 
 from final_project.src.config import CFG
+from final_project.src.modeling.callbacks import ClearMLSummaryCallback
 
 
 def create_trainer(
     dir_path: str | Path,
     config: CFG,
     fast_dev_run: bool = False,
+    clearml_task: Any = None,
 ) -> Trainer:
     output_dir = Path(dir_path)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -29,7 +32,11 @@ def create_trainer(
     trainer_params = asdict(config.trainer)
     trainer_params["default_root_dir"] = str(output_dir)
 
-    callbacks = _build_callbacks(output_dir=output_dir, config=config)
+    callbacks = _build_callbacks(
+        output_dir=output_dir,
+        config=config,
+        clearml_task=clearml_task,
+    )
     logger = _build_logger(output_dir=output_dir)
 
     return Trainer(
@@ -40,7 +47,11 @@ def create_trainer(
     )
 
 
-def _build_callbacks(output_dir: Path, config: CFG) -> list[Callback]:
+def _build_callbacks(
+    output_dir: Path,
+    config: CFG,
+    clearml_task: Any = None,
+) -> list[Callback]:
     callbacks: list[Callback] = [
         EarlyStopping(
             monitor="valid/loss",
@@ -59,6 +70,9 @@ def _build_callbacks(output_dir: Path, config: CFG) -> list[Callback]:
         ),
         LearningRateMonitor(logging_interval="step"),
     ]
+
+    if clearml_task is not None:
+        callbacks.append(ClearMLSummaryCallback(task=clearml_task, config=config))
 
     if config.callbacks.use_rich_progress_bar:
         callbacks.append(RichProgressBar())
