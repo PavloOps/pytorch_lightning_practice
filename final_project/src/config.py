@@ -17,11 +17,12 @@ class TrainerConfig:
     gradient_clip_val: float = 1.0
     accumulate_grad_batches: int = 1
     limit_train_batches: float = 1.0
-    limit_val_batches: float = 1.0
+    limit_val_batches: float = 0.5
     limit_test_batches: float = 1.0
     detect_anomaly: bool = False
-    log_every_n_steps: int = 20
+    log_every_n_steps: int = 100
     check_val_every_n_epoch: int = 1
+    num_sanity_val_steps: int = 0
 
 
 @dataclass
@@ -41,13 +42,13 @@ class DataConfig:
     train_file_name: str = "train_dataset_prepared.csv"
     val_file_name: str | None = "valid_dataset_prepared.csv"
     test_file_name: str | None = None
-    batch_size: int = 1024
+    batch_size: int = 3072
     num_workers: int = 4
     val_ratio: float = 0.1
     test_ratio: float = 0.1
     label_col: str = "label"
     add_month_feature: bool = True
-    drop_last: bool = False
+    drop_last: bool = True
     pin_memory: bool = True
     persistent_workers: bool = True
     user_cat_cols: tuple[str, ...] = ("user_id", "region", "city")
@@ -86,7 +87,7 @@ class OptimizationConfig:
 class CallbacksConfig:
     early_stopping_patience: int = 3
     save_top_k: int = 3
-    use_rich_progress_bar: bool = True
+    use_rich_progress_bar: bool = False
     use_rich_model_summary: bool = True
     use_swa: bool = False
     swa_lrs: float = 1e-3
@@ -96,7 +97,7 @@ class CallbacksConfig:
 @dataclass
 class ClearMLConfig:
     enabled: bool = True
-    project_name: str = "RecSys / Two Tower"
+    project_name: str = "RecSys/Two Tower"
     task_name: str = "two-tower-training"
     tags: list[str] = field(default_factory=lambda: ["recsys", "two-tower", "training"])
     reuse_last_task_id: bool = False
@@ -115,8 +116,10 @@ class DebugEvalConfig:
     raw_train_path: str | None = None
     per_case: int = 25
     candidates_per_sample: int = 100
+    max_cases_per_epoch: int = 10
+    progress_log_every: int = 100
     seed: int = 42
-    preview_rows: int = 20
+    preview_rows: int = 10
     report_top_cases: int = 20
 
 

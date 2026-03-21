@@ -313,7 +313,7 @@ class TwoTowerModel(LightningModule):
             batch_size=batch["label"].size(0),
         )
 
-        if "query_id" in batch:
+        if "query_id" in batch and step != "train":
             preds = outputs["logit"].detach()
             target = batch["label"].long()
             indexes = batch["query_id"]

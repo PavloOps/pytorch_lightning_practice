@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import click
+import torch
 from lightning import seed_everything
 
 from final_project.src.config import CFG
@@ -48,6 +49,9 @@ def run_training(
     test_path: str | None = None,
     fast_dev_run: bool = False,
 ) -> None:
+    if config.trainer.accelerator == "cuda":
+        torch.set_float32_matmul_precision("high")
+
     seed_everything(config.general.seed, workers=True)
 
     clearml_task = init_clearml_task(
@@ -84,13 +88,13 @@ def run_training(
 @click.option(
     "--train-path",
     type=click.Path(path_type=Path),
-    default=Path("/home/pavloops/PycharmProjects/pytorch_lightning_practice/final_project/data/train_dataset_prepared.csv"),
+    default=Path("/home/pavloops/PycharmProjects/pytorch_lightning_practice/final_project/data/raw_dataset.csv"),
     show_default=True,
 )
 @click.option(
     "--val-path",
     type=click.Path(path_type=Path),
-    default=Path("/home/pavloops/PycharmProjects/pytorch_lightning_practice/final_project/data/valid_dataset_prepared.csv"),
+    default=Path("/home/pavloops/PycharmProjects/pytorch_lightning_practice/final_project/data/raw_val_dataset.csv"),
     show_default=True,
 )
 @click.option("--test-path", type=click.Path(path_type=Path), default=None)

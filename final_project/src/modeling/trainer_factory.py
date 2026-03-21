@@ -36,6 +36,7 @@ def create_trainer(
         output_dir=output_dir,
         config=config,
         clearml_task=clearml_task,
+        fast_dev_run=fast_dev_run,
     )
     logger = _build_logger(output_dir=output_dir)
 
@@ -51,6 +52,7 @@ def _build_callbacks(
     output_dir: Path,
     config: CFG,
     clearml_task: Any = None,
+    fast_dev_run: bool = False,
 ) -> list[Callback]:
     callbacks: list[Callback] = [
         EarlyStopping(
@@ -74,10 +76,10 @@ def _build_callbacks(
     if clearml_task is not None:
         callbacks.append(ClearMLSummaryCallback(task=clearml_task, config=config))
 
-    if config.callbacks.use_rich_progress_bar:
+    if config.callbacks.use_rich_progress_bar and not fast_dev_run:
         callbacks.append(RichProgressBar())
 
-    if config.callbacks.use_rich_model_summary:
+    if config.callbacks.use_rich_model_summary and not fast_dev_run:
         callbacks.append(RichModelSummary(max_depth=2))
 
     if config.callbacks.use_swa:

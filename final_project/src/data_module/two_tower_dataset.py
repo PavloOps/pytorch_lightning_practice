@@ -31,6 +31,8 @@ class TwoTowerDataset(Dataset):
         numeric_stats: Optional[Dict[str, NumericStats]] = None,
         fit: bool = False,
         add_month_feature: bool = True,
+        example_size: int = 30,
+        example_random_state: Optional[int] = None,
     ) -> None:
         self.user_cat_cols = (
             list(user_cat_cols)
@@ -54,9 +56,18 @@ class TwoTowerDataset(Dataset):
         )
         self.label_col = label_col
         self.add_month_feature = add_month_feature
+        self.example_frame: pd.DataFrame | None = None
+        self.example_size = max(int(example_size), 0)
+        self.example_random_state = example_random_state
 
-        self.df = frame.copy()
+        self.df = frame
         self._prepare_month_feature()
+        if self.example_size > 0 and len(self.df) > 0:
+            sample_size = min(self.example_size, len(self.df))
+            self.example_frame = self.df.sample(
+                n=sample_size,
+                random_state=self.example_random_state,
+            ).copy()
 
         self.cat_cols = self.user_cat_cols + self.item_cat_cols
         self.num_cols = self.user_num_cols + self.item_num_cols
@@ -98,11 +109,12 @@ class TwoTowerDataset(Dataset):
             col for col in ("user_id", "year_month", "region", "city") if col in self.df.columns
         ]
         if query_cols:
-            query_codes, _ = pd.factorize(
-                self.df[query_cols].astype(str).agg("||".join, axis=1),
-                sort=False,
-            )
+            query_frame = self.df[query_cols].astype("string").fillna(MISSING_TOKEN)
+            query_codes, _ = pd.MultiIndex.from_frame(query_frame).factorize(sort=False)
             self.query_id_tensor = torch.tensor(query_codes, dtype=torch.long)
+
+        self._length = len(self.df)
+        self.df = None
 
     @staticmethod
     def _fit_category_maps(
@@ -112,8 +124,8 @@ class TwoTowerDataset(Dataset):
         for col in cols:
             values = (
                 df[col]
+                .astype("string")
                 .fillna(MISSING_TOKEN)
-                .astype(str)
                 .drop_duplicates()
                 .sort_values()
                 .tolist()
@@ -158,8 +170,8 @@ class TwoTowerDataset(Dataset):
             mapping = self.category_maps[col]
             encoded = (
                 self.df[col]
+                .astype("string")
                 .fillna(MISSING_TOKEN)
-                .astype(str)
                 .map(mapping)
                 .fillna(0)
                 .astype("int64")
@@ -190,7 +202,7 @@ class TwoTowerDataset(Dataset):
         return torch.stack(encoded_columns, dim=1)
 
     def __len__(self) -> int:
-        return len(self.df)
+        return self._length
 
     def __getitem__(self, idx: int) -> Dict[str, torch.Tensor]:
         sample = {
