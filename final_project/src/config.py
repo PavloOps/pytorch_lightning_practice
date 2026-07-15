@@ -1,6 +1,9 @@
 from dataclasses import asdict, dataclass, field
+from pathlib import Path
 
 from torch.cuda import is_available
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 @dataclass
@@ -12,9 +15,9 @@ class GeneralConfig:
 
 @dataclass
 class DataConfig:
-    data_dir: str = "./data/raw"
-    external_dir: str = "./data/external"
-    samples_dir: str = "./data/samples"
+    data_dir: str = str(PROJECT_ROOT / "data" / "raw")
+    external_dir: str = str(PROJECT_ROOT / "data" / "external")
+    samples_dir: str = str(PROJECT_ROOT / "data" / "samples")
     download: bool = True
     archive_url: str = "http://data.vision.ee.ethz.ch/cvl/food-101.tar.gz"
     archive_name: str = "food-101.tar.gz"
