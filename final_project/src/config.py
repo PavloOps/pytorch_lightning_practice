@@ -18,6 +18,7 @@ class DataConfig:
     data_dir: str = str(PROJECT_ROOT / "data" / "raw")
     external_dir: str = str(PROJECT_ROOT / "data" / "external")
     samples_dir: str = str(PROJECT_ROOT / "data" / "samples")
+    figures_dir: str = str(PROJECT_ROOT / "reports" / "figures")
     download: bool = True
     archive_url: str = "http://data.vision.ee.ethz.ch/cvl/food-101.tar.gz"
     archive_name: str = "food-101.tar.gz"
@@ -86,8 +87,10 @@ class TransformConfig:
 class ModelConfig:
     model_name: str = "convnext_tiny"
     weights: str = "DEFAULT"
+    weights_cache_dir: str | None = None
     num_classes: int = 101
-    freeze_backbone: bool = False
+    freeze_backbone: bool = True
+    unfreeze_backbone_epoch: int | None = 2
 
 
 @dataclass
@@ -95,8 +98,15 @@ class TrainingConfig:
     lr: float = 3e-4
     backbone_lr: float = 3e-5
     weight_decay: float = 1e-4
+    label_smoothing: float = 0.1
     monitor_metric: str = "val/macro_f1"
     monitor_mode: str = "max"
+    early_stopping_patience: int = 3
+    save_top_k: int = 3
+    debug_samples_epoch: int = 1
+    num_debug_samples: int = 4
+    debug_top_k: int = 5
+    gradcam_alpha: float = 0.45
 
 
 @dataclass
@@ -104,6 +114,7 @@ class TrainerConfig:
     max_epochs: int = 10
     accelerator: str = "gpu" if is_available() else "cpu"
     devices: int = 1
+    precision: str = "32-true"
     log_every_n_steps: int = 10
     check_val_every_n_epoch: int = 1
 

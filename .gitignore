@@ -4,6 +4,7 @@
 /data/
 gan*.ckpt
 /final_project/lightning_logs/
+/final_project/.env
 
 # Final project local data and model artifacts
 /final_project/data/external/*
