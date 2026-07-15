@@ -1,0 +1,14 @@
+clearml==2.0.2
+click==8.1.8
+lightning==2.5.0.post0
+matplotlib==3.10.1
+numpy==1.26.4
+pandas==2.2.3
+pillow==11.3.0
+python-dotenv==1.0.1
+scikit-learn==1.6.1
+seaborn==0.13.2
+torch
+torchmetrics
+torchvision
+tqdm==4.67.1

@@ -4,3 +4,17 @@
 /data/
 gan*.ckpt
 /final_project/lightning_logs/
+
+# Final project local data and model artifacts
+/final_project/data/external/*
+/final_project/data/interim/*
+/final_project/data/processed/*
+/final_project/data/raw/*
+/final_project/data/predictions/*
+/final_project/models/*
+!/final_project/data/external/.gitkeep
+!/final_project/data/interim/.gitkeep
+!/final_project/data/processed/.gitkeep
+!/final_project/data/raw/.gitkeep
+!/final_project/data/predictions/.gitkeep
+!/final_project/models/.gitkeep

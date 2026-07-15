@@ -303,13 +303,14 @@ class Food101DataModule(LightningDataModule):
         persistent_workers = (
             self.data_config.persistent_workers and self.data_config.num_workers > 0
         )
+        pin_memory = self.data_config.pin_memory and torch.cuda.is_available()
 
         return DataLoader(
             dataset,
             batch_size=self.data_config.batch_size,
             shuffle=shuffle,
             num_workers=self.data_config.num_workers,
-            pin_memory=self.data_config.pin_memory,
+            pin_memory=pin_memory,
             persistent_workers=persistent_workers,
         )
 
