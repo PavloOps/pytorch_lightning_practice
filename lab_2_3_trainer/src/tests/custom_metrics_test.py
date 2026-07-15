@@ -13,9 +13,7 @@ class TestFalseDiscoveryRate(TestCase):
         metric = FalseDiscoveryRate(num_classes=self.num_classes, reduction="none")
 
         targets = torch.tensor([0, 1, 2, 0, 1, 2])
-        predictions = torch.nn.functional.one_hot(
-            targets, num_classes=self.num_classes
-        ).float()
+        predictions = torch.nn.functional.one_hot(targets, num_classes=self.num_classes).float()
 
         metric.update(predictions, targets)
         result = metric.compute()
@@ -44,9 +42,7 @@ class TestFalseDiscoveryRate(TestCase):
         targets = torch.tensor([0, 1, 1, 2, 2, 2])
         preds_classes = torch.tensor([0, 2, 1, 2, 0, 2])
 
-        predictions = torch.nn.functional.one_hot(
-            preds_classes, num_classes=self.num_classes
-        ).float()
+        predictions = torch.nn.functional.one_hot(preds_classes, num_classes=self.num_classes).float()
 
         metric.update(predictions, targets)
         result = metric.compute()
@@ -89,9 +85,7 @@ class TestFalseDiscoveryRate(TestCase):
         targets = torch.tensor([0, 1, 1, 2, 2, 2])
         preds_classes = torch.tensor([0, 2, 1, 2, 0, 2])
 
-        predictions = torch.nn.functional.one_hot(
-            preds_classes, num_classes=self.num_classes
-        ).float()
+        predictions = torch.nn.functional.one_hot(preds_classes, num_classes=self.num_classes).float()
 
         metric.update(predictions, targets)
         result = metric.compute()
@@ -103,18 +97,14 @@ class TestFalseDiscoveryRate(TestCase):
         total_tp = 1 + 1 + 2  # = 4
         total_fp = 1 + 0 + 1  # = 2
         expected_value = total_fp / (total_tp + total_fp)  # 2 / (4 + 2) = 1/3
-        expected = torch.tensor(
-            expected_value, device=result.device, dtype=result.dtype
-        )
+        expected = torch.tensor(expected_value, device=result.device, dtype=result.dtype)
         torch.testing.assert_close(result, expected, rtol=1e-5, atol=1e-8)
 
     def test_macro_average(self):
         metric = FalseDiscoveryRate(num_classes=self.num_classes, reduction="macro")
         targets = torch.tensor([0, 1, 1, 2, 2, 2])
         predicteds_classes = torch.tensor([0, 2, 1, 2, 0, 2])
-        predictions = torch.nn.functional.one_hot(
-            predicteds_classes, num_classes=self.num_classes
-        ).float()
+        predictions = torch.nn.functional.one_hot(predicteds_classes, num_classes=self.num_classes).float()
 
         metric.update(predictions, targets)
         result = metric.compute()

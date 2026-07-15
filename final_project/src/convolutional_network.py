@@ -3,11 +3,10 @@ from dataclasses import asdict
 
 import torch
 import torchmetrics as tm
+from config import CFG
 from lightning import LightningModule
 from torch import nn
 from torchvision.models import ConvNeXt_Tiny_Weights, convnext_tiny
-
-from config import CFG
 
 torch.set_float32_matmul_precision("medium")
 
@@ -33,34 +32,18 @@ class Food101ConvNeXt(LightningModule):
 
         self.model = self.build_model()
         self.backbone = self.model.features
-        self.criterion = nn.CrossEntropyLoss(
-            label_smoothing=config.training.label_smoothing
-        )
+        self.criterion = nn.CrossEntropyLoss(label_smoothing=config.training.label_smoothing)
 
-        self.train_accuracy = tm.Accuracy(
-            task="multiclass", num_classes=self.num_classes
-        )
+        self.train_accuracy = tm.Accuracy(task="multiclass", num_classes=self.num_classes)
         self.val_accuracy = tm.Accuracy(task="multiclass", num_classes=self.num_classes)
-        self.test_accuracy = tm.Accuracy(
-            task="multiclass", num_classes=self.num_classes
-        )
+        self.test_accuracy = tm.Accuracy(task="multiclass", num_classes=self.num_classes)
 
-        self.train_macro_f1 = tm.F1Score(
-            task="multiclass", num_classes=self.num_classes, average="macro"
-        )
-        self.val_macro_f1 = tm.F1Score(
-            task="multiclass", num_classes=self.num_classes, average="macro"
-        )
-        self.test_macro_f1 = tm.F1Score(
-            task="multiclass", num_classes=self.num_classes, average="macro"
-        )
+        self.train_macro_f1 = tm.F1Score(task="multiclass", num_classes=self.num_classes, average="macro")
+        self.val_macro_f1 = tm.F1Score(task="multiclass", num_classes=self.num_classes, average="macro")
+        self.test_macro_f1 = tm.F1Score(task="multiclass", num_classes=self.num_classes, average="macro")
 
-        self.val_top5_accuracy = tm.Accuracy(
-            task="multiclass", num_classes=self.num_classes, top_k=5
-        )
-        self.test_top5_accuracy = tm.Accuracy(
-            task="multiclass", num_classes=self.num_classes, top_k=5
-        )
+        self.val_top5_accuracy = tm.Accuracy(task="multiclass", num_classes=self.num_classes, top_k=5)
+        self.test_top5_accuracy = tm.Accuracy(task="multiclass", num_classes=self.num_classes, top_k=5)
 
     def build_model(self):
         weights = self.get_weights()

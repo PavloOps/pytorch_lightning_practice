@@ -30,9 +30,7 @@ class Generator(nn.Module):
             nn.Linear(noise_dim, 256 * 7 * 7),
             nn.ReLU(True),
             nn.Unflatten(1, (256, 7, 7)),
-            nn.ConvTranspose2d(
-                256, 128, kernel_size=4, stride=2, padding=1, bias=False
-            ),
+            nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(128),
             nn.ReLU(True),
             nn.ConvTranspose2d(128, 1, kernel_size=4, stride=2, padding=1, bias=False),
@@ -89,12 +87,8 @@ class GAN(LightningModule):
         return self.generator(noise_vector)
 
     def configure_optimizers(self):
-        opt_g = torch.optim.Adam(
-            self.generator.parameters(), lr=self.lr, betas=self.betas
-        )
-        opt_d = torch.optim.Adam(
-            self.discriminator.parameters(), lr=self.lr * 0.25, betas=(0.6, 0.999)
-        )
+        opt_g = torch.optim.Adam(self.generator.parameters(), lr=self.lr, betas=self.betas)
+        opt_d = torch.optim.Adam(self.discriminator.parameters(), lr=self.lr * 0.25, betas=(0.6, 0.999))
         return [opt_g, opt_d], []
 
     def training_step(self, batch, batch_idx):
@@ -131,12 +125,8 @@ class GAN(LightningModule):
 
         self.log("train/loss_discriminator", loss_d, prog_bar=True)
         self.log("train/loss_generator", loss_g, prog_bar=True)
-        self.clearml_logger.report_scalar(
-            "Loss", "train_generator", loss_g.item(), self.global_step
-        )
-        self.clearml_logger.report_scalar(
-            "Loss", "train_discriminator", loss_d.item(), self.global_step
-        )
+        self.clearml_logger.report_scalar("Loss", "train_generator", loss_g.item(), self.global_step)
+        self.clearml_logger.report_scalar("Loss", "train_discriminator", loss_d.item(), self.global_step)
 
         return {"train/loss": (loss_d + loss_g) / 2}
 
@@ -165,12 +155,8 @@ class GAN(LightningModule):
         self.log("val/loss_discriminator", loss_d, prog_bar=True, on_epoch=True)
         self.log("val/loss_generator", loss_g, prog_bar=True, on_epoch=True)
 
-        self.clearml_logger.report_scalar(
-            "Loss", "val_generator", loss_g.item(), self.global_step
-        )
-        self.clearml_logger.report_scalar(
-            "Loss", "val_discriminator", loss_d.item(), self.global_step
-        )
+        self.clearml_logger.report_scalar("Loss", "val_generator", loss_g.item(), self.global_step)
+        self.clearml_logger.report_scalar("Loss", "val_discriminator", loss_d.item(), self.global_step)
 
         return {"val/loss": (loss_d + loss_g) / 2}
 

@@ -2,8 +2,7 @@ import os
 from dataclasses import asdict
 
 from lightning import Trainer
-from lightning.pytorch.callbacks import (EarlyStopping, LearningRateMonitor,
-                                         ModelCheckpoint)
+from lightning.pytorch.callbacks import EarlyStopping, LearningRateMonitor, ModelCheckpoint
 
 from .config import CFG
 

@@ -62,26 +62,19 @@ class SignLanguageLightning(LightningDataModule):
     def _file_is_available(self, file_name, ideal_file_hash):
         return (
             os.path.exists(os.path.join(self.config.data.data_dir, file_name))
-            and self._calculate_sha256(
-                os.path.join(self.config.data.data_dir, file_name)
-            )
-            == ideal_file_hash
+            and self._calculate_sha256(os.path.join(self.config.data.data_dir, file_name)) == ideal_file_hash
         )
 
     def _download_file(self, file_path, file_url):
         logger.info("Start files' downloading:")
         subprocess.run(["wget", "-O", file_path, file_url], check=True)
-        subprocess.run(
-            ["unzip", file_path, "-d", self.config.data.data_dir], check=True
-        )
+        subprocess.run(["unzip", file_path, "-d", self.config.data.data_dir], check=True)
         subprocess.run(["rm", file_path], check=True)
 
     def prepare_data(self):
         os.makedirs(self.config.data.data_dir, exist_ok=True)
 
-        if not self._file_is_available(
-            self.config.data.train_name, self.config.data.train_hash
-        ):
+        if not self._file_is_available(self.config.data.train_name, self.config.data.train_hash):
             self._download_file(
                 file_path=os.path.join(self.config.data.data_dir, "train.csv.zip"),
                 file_url=self.config.data.train_url,
@@ -89,9 +82,7 @@ class SignLanguageLightning(LightningDataModule):
         else:
             logger.info("Train file already downloaded.")
 
-        if not self._file_is_available(
-            self.config.data.test_name, self.config.data.test_hash
-        ):
+        if not self._file_is_available(self.config.data.test_name, self.config.data.test_hash):
             self._download_file(
                 file_path=os.path.join(self.config.data.data_dir, "test.csv.zip"),
                 file_url=self.config.data.test_url,
@@ -107,9 +98,7 @@ class SignLanguageLightning(LightningDataModule):
 
     def setup(self, stage):
         if stage in ("fit", "train", None):
-            raw_data = pd.read_csv(
-                os.path.join(self.config.data.data_dir, self.config.data.train_name)
-            )
+            raw_data = pd.read_csv(os.path.join(self.config.data.data_dir, self.config.data.train_name))
 
             train_data, val_data = train_test_split(
                 raw_data,
@@ -125,9 +114,7 @@ class SignLanguageLightning(LightningDataModule):
             gc.collect()
 
         if stage in ("test", None) and self.test_dataset is None:
-            raw_data = pd.read_csv(
-                os.path.join(self.config.data.data_dir, self.config.data.test_name)
-            )
+            raw_data = pd.read_csv(os.path.join(self.config.data.data_dir, self.config.data.test_name))
             self.test_dataset = self._load_dataset_to_ram(raw_data, mode="test")
             del raw_data
             gc.collect()

@@ -8,14 +8,13 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import torch
 import torchvision.transforms as transforms
+from config import CFG
 from lightning import Trainer, seed_everything
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
-from torchview import draw_graph
-
-from config import CFG
 from src.convolutional_network import MyConvNet
 from src.network_trainer import create_trainer, pick_best_model
 from src.sign_data_module import SignLanguageLightning
+from torchview import draw_graph
 
 torch.set_float32_matmul_precision("medium")
 logging.basicConfig(
@@ -35,9 +34,7 @@ def show_image(image):
 
 
 def visualize_network(model_to_visualize, picture_file_name):
-    model_graph = draw_graph(
-        model_to_visualize, input_size=(1, 1, 28, 28), expand_nested=True
-    )
+    model_graph = draw_graph(model_to_visualize, input_size=(1, 1, 28, 28), expand_nested=True)
     model_graph.visual_graph.format = "png"
     model_graph.visual_graph.render(picture_file_name, format="png", cleanup=True)
     logger.info(model_to_visualize)
@@ -104,15 +101,9 @@ def run_experiment(config, need_dev_run=True):
                     config.augmentation.normalize_mean,
                     config.augmentation.normalize_std,
                 ),
-                transforms.RandomHorizontalFlip(
-                    p=config.augmentation.random_horizontal_flip_p
-                ),
+                transforms.RandomHorizontalFlip(p=config.augmentation.random_horizontal_flip_p),
                 transforms.RandomApply(
-                    [
-                        transforms.RandomRotation(
-                            degrees=config.augmentation.random_rotation_degrees
-                        )
-                    ],
+                    [transforms.RandomRotation(degrees=config.augmentation.random_rotation_degrees)],
                     p=config.augmentation.random_rotation_p,
                 ),
             ]
@@ -122,9 +113,7 @@ def run_experiment(config, need_dev_run=True):
 
     if need_dev_run:
         try:
-            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(
-                io.StringIO()
-            ):
+            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
                 trainer = Trainer(fast_dev_run=True)
                 trainer.fit(model, datamodule=dataset)
             logger.info("Тестовый прогон успешно пройден")
@@ -135,9 +124,7 @@ def run_experiment(config, need_dev_run=True):
             logger.error(f"Произошла непредвиденная ошибка: {e}")
             raise
 
-    trainer = create_trainer(
-        dir_path=config.data.saved_models_dir, params=asdict(config.trainer)
-    )
+    trainer = create_trainer(dir_path=config.data.saved_models_dir, params=asdict(config.trainer))
     trainer.fit(model, datamodule=dataset)
     dataset.teardown()
 
@@ -157,16 +144,12 @@ def make_one_picture_inference(config, dir_path, wanted_index):
     testiter = iter(inference_loader)
     img, label = next(testiter)
     pred = restored_model(img)
-    logger.info(
-        f"Fact: {label[wanted_index]}, Prediction: {(torch.argmax(pred[wanted_index], dim=0))}"
-    )
+    logger.info(f"Fact: {label[wanted_index]}, Prediction: {(torch.argmax(pred[wanted_index], dim=0))}")
     show_image(img[wanted_index])
 
 
 @click.command()
-@click.option(
-    "--fast_dev_run", "-f", is_flag=True, help="Firstly, run in fast development mode."
-)
+@click.option("--fast_dev_run", "-f", is_flag=True, help="Firstly, run in fast development mode.")
 def cli(fast_dev_run):
     cfg = CFG()
     logger.info("Convolutional Neural Network Architecture is:")

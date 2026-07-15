@@ -6,9 +6,8 @@ import torch
 import torch.utils.data as data
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
-from lightning import LightningDataModule
-
 from config import CFG
+from lightning import LightningDataModule
 
 logging.basicConfig(
     level=logging.INFO,
@@ -36,33 +35,23 @@ class MNISTLightning(LightningDataModule):
     def __init__(self, config, transform=None):
         super().__init__()
         self.config = config
-        self.dataset_file_path = os.path.join(
-            self.config.data.data_dir, self.config.data.file_name
-        )
+        self.dataset_file_path = os.path.join(self.config.data.data_dir, self.config.data.file_name)
         self.train_dataset = None
         self.val_dataset = None
         self.transform = (
             transform
             if transform is not None
-            else transforms.Compose(
-                [transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]
-            )
+            else transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
         )
 
     def prepare_data(self):
         if not os.path.exists(self.dataset_file_path):
             logger.info("Processed dataset not found — downloading raw MNIST...")
-            mnist = datasets.MNIST(
-                root=self.config.data.data_dir, train=True, download=True
-            )
-            images = torch.stack(
-                [transforms.ToTensor()(mnist[i][0]) for i in range(len(mnist))]
-            )
+            mnist = datasets.MNIST(root=self.config.data.data_dir, train=True, download=True)
+            images = torch.stack([transforms.ToTensor()(mnist[i][0]) for i in range(len(mnist))])
             labels = torch.tensor([mnist[i][1] for i in range(len(mnist))])
 
-            torch.save(
-                {"images": images, "labels": labels}, str(self.dataset_file_path)
-            )
+            torch.save({"images": images, "labels": labels}, str(self.dataset_file_path))
             logger.info(f"Processed MNIST saved to {self.dataset_file_path}")
         else:
             logger.info("Processed dataset already exists — skipping download.")

@@ -22,7 +22,7 @@ m = ExampleMetric()
 
 print(m.counter)
 
-m.update(torch.tensor([1, 2, 3]), torch.tensor([1, 2, 4])) # can be replaced with call method
+m.update(torch.tensor([1, 2, 3]), torch.tensor([1, 2, 4]))  # can be replaced with call method
 
 print(m.counter)
 
@@ -32,6 +32,6 @@ m.reset()
 
 print(m.counter)
 
-m(torch.tensor([1, 2, 3]), torch.tensor([1, 2, 4])) # Object as function
+m(torch.tensor([1, 2, 3]), torch.tensor([1, 2, 4]))  # Object as function
 
 print(m.counter)

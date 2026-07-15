@@ -9,6 +9,7 @@ import urllib.request
 from pathlib import Path
 
 import torch
+from config import CFG
 from lightning import LightningDataModule, seed_everything
 from torch.utils.data import DataLoader, Dataset, Subset
 from torchvision.datasets import Food101
@@ -16,8 +17,6 @@ from torchvision.datasets.folder import default_loader
 from torchvision.transforms import v2
 from torchvision.utils import save_image
 from tqdm import tqdm
-
-from config import CFG
 
 logging.basicConfig(
     level=logging.INFO,
@@ -73,12 +72,8 @@ class Food101DataModule(LightningDataModule):
                         scale=transform_config.random_resized_crop_scale,
                         antialias=transform_config.antialias,
                     ),
-                    v2.RandomHorizontalFlip(
-                        p=transform_config.random_horizontal_flip_p
-                    ),
-                    v2.RandomRotation(
-                        degrees=transform_config.random_rotation_degrees
-                    ),
+                    v2.RandomHorizontalFlip(p=transform_config.random_horizontal_flip_p),
+                    v2.RandomRotation(degrees=transform_config.random_rotation_degrees),
                     v2.RandomAffine(**transform_config.random_affine_params),
                     v2.ColorJitter(**transform_config.color_jitter_params),
                     v2.ToImage(),
@@ -94,15 +89,10 @@ class Food101DataModule(LightningDataModule):
             else v2.Compose(
                 [
                     v2.Resize(
-                        size=(
-                            self.data_config.image_size
-                            + transform_config.eval_resize_offset
-                        ),
+                        size=(self.data_config.image_size + transform_config.eval_resize_offset),
                         antialias=transform_config.antialias,
                     ),
-                    v2.CenterCrop(
-                        size=(self.data_config.image_size, self.data_config.image_size)
-                    ),
+                    v2.CenterCrop(size=(self.data_config.image_size, self.data_config.image_size)),
                     v2.ToImage(),
                     v2.ToDtype(torch.float32, scale=True),
                     v2.Normalize(**transform_config.normalize_params),
@@ -129,9 +119,7 @@ class Food101DataModule(LightningDataModule):
     def file_is_available(self, file_path):
         return (
             file_path.exists()
-            and self.calculate_file_hash(
-                file_path, self.data_config.archive_hash_algorithm
-            )
+            and self.calculate_file_hash(file_path, self.data_config.archive_hash_algorithm)
             == self.data_config.archive_hash
         )
 
@@ -181,9 +169,7 @@ class Food101DataModule(LightningDataModule):
             context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
             context.check_hostname = False
             context.verify_mode = ssl.CERT_NONE
-            with urllib.request.urlopen(
-                self.data_config.archive_url, context=context
-            ) as response:
+            with urllib.request.urlopen(self.data_config.archive_url, context=context) as response:
                 self.save_response_to_archive(response)
 
     def extract_archive(self):
@@ -206,8 +192,7 @@ class Food101DataModule(LightningDataModule):
 
         for class_label, image_rel_paths in metadata.items():
             image_files.extend(
-                images_dir.joinpath(*f"{image_rel_path}.jpg".split("/"))
-                for image_rel_path in image_rel_paths
+                images_dir.joinpath(*f"{image_rel_path}.jpg".split("/")) for image_rel_path in image_rel_paths
             )
             labels.extend([class_to_idx[class_label]] * len(image_rel_paths))
 
@@ -222,10 +207,7 @@ class Food101DataModule(LightningDataModule):
             return
 
         if not self.data_config.download:
-            raise FileNotFoundError(
-                f"Food-101 dataset not found in {self.data_dir}, "
-                "and data.download is False."
-            )
+            raise FileNotFoundError(f"Food-101 dataset not found in {self.data_dir}, " "and data.download is False.")
 
         self.remove_broken_archive()
 
@@ -233,10 +215,7 @@ class Food101DataModule(LightningDataModule):
             self.download_archive()
 
         if not self.file_is_available(self.archive_path):
-            raise RuntimeError(
-                "Food-101 archive hash mismatch after download: "
-                f"{self.archive_path}"
-            )
+            raise RuntimeError("Food-101 archive hash mismatch after download: " f"{self.archive_path}")
 
         self.extract_archive()
 
@@ -246,9 +225,7 @@ class Food101DataModule(LightningDataModule):
 
     def setup(self, stage=None):
         if stage in ("fit", None):
-            image_files, labels, self.classes, self.class_to_idx = (
-                self.get_food101_dataset_part("train")
-            )
+            image_files, labels, self.classes, self.class_to_idx = self.get_food101_dataset_part("train")
 
             val_len = int(len(image_files) * self.data_config.val_size)
             train_len = len(image_files) - val_len
@@ -282,9 +259,7 @@ class Food101DataModule(LightningDataModule):
             )
 
         if stage in ("test", "predict", None):
-            image_files, labels, classes, class_to_idx = (
-                self.get_food101_dataset_part("test")
-            )
+            image_files, labels, classes, class_to_idx = self.get_food101_dataset_part("test")
 
             self.test_dataset = Food101Dataset(
                 image_files=image_files,
@@ -300,9 +275,7 @@ class Food101DataModule(LightningDataModule):
             logger.info("Food-101 test split is ready: test=%s.", len(self.test_dataset))
 
     def make_dataloader(self, dataset, shuffle: bool):
-        persistent_workers = (
-            self.data_config.persistent_workers and self.data_config.num_workers > 0
-        )
+        persistent_workers = self.data_config.persistent_workers and self.data_config.num_workers > 0
         pin_memory = self.data_config.pin_memory and torch.cuda.is_available()
 
         return DataLoader(

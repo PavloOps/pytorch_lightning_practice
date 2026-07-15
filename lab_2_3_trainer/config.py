@@ -41,12 +41,8 @@ class AugmentationConfig:
 class DataConfig:
     data_dir: str = "dataset"
     saved_models_dir: str = "saved_models"
-    train_url: str = (
-        "https://github.com/a-milenkin/ml_instruments/raw/refs/heads/main/data/sign_mnist_train.csv.zip"
-    )
-    test_url: str = (
-        "https://github.com/a-milenkin/ml_instruments/raw/refs/heads/main/data/sign_mnist_test.csv.zip"
-    )
+    train_url: str = "https://github.com/a-milenkin/ml_instruments/raw/refs/heads/main/data/sign_mnist_train.csv.zip"
+    test_url: str = "https://github.com/a-milenkin/ml_instruments/raw/refs/heads/main/data/sign_mnist_test.csv.zip"
     train_hash: str = "4c2897f19fab2b0ae2a7e4fa82e969043315d9f3a1a9cc0948b576bf1189a7e5"
     test_hash: str = "0e9d67bae23e67f40728e0b63bf15ad4bd5175947b8a9fac5dd9f17ce133c47b"
     train_name: str = "sign_mnist_train.csv"

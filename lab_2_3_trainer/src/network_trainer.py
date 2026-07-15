@@ -39,12 +39,7 @@ def pick_best_model(dir_path):
         )
 
     return max(
-        (
-            os.path.join(root, f)
-            for root, _, files in os.walk(dir_path)
-            for f in files
-            if f.endswith(".ckpt")
-        ),
+        (os.path.join(root, f) for root, _, files in os.walk(dir_path) for f in files if f.endswith(".ckpt")),
         key=lambda f: parse_numbers(os.path.basename(f)),
         default=None,
     )

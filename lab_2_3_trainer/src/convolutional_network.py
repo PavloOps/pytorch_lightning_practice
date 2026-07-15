@@ -1,14 +1,13 @@
 import torch
 import torchmetrics as tm
-from lab_2_3_trainer.src.custom_metric import FalseDiscoveryRate
 from lightning import LightningModule
 from torch import nn
 
+from lab_2_3_trainer.src.custom_metric import FalseDiscoveryRate
+
 
 def calc_out_size(img_size, kernel_size, stride=1, padding=1, dilation=1):
-    out_size = (
-        (img_size + 2 * padding - (dilation * (kernel_size - 1) + 1)) / stride
-    ) + 1
+    out_size = ((img_size + 2 * padding - (dilation * (kernel_size - 1) + 1)) / stride) + 1
     return int(out_size)
 
 
@@ -18,24 +17,12 @@ class MyConvNet(LightningModule):
         self.save_hyperparameters()
         self.config = config
         self.lr = config.training.lr
-        self.train_fbeta = tm.FBetaScore(
-            task="multiclass", num_classes=self.config.model.n_classes
-        )
-        self.valid_fbeta = tm.FBetaScore(
-            task="multiclass", num_classes=self.config.model.n_classes
-        )
-        self.train_roc_auc = tm.AUROC(
-            task="multiclass", num_classes=self.config.model.n_classes
-        )
-        self.valid_roc_auc = tm.AUROC(
-            task="multiclass", num_classes=self.config.model.n_classes
-        )
-        self.train_fdr = FalseDiscoveryRate(
-            task="multiclass", num_classes=self.config.model.n_classes
-        )
-        self.valid_fdr = FalseDiscoveryRate(
-            task="multiclass", num_classes=self.config.model.n_classes
-        )
+        self.train_fbeta = tm.FBetaScore(task="multiclass", num_classes=self.config.model.n_classes)
+        self.valid_fbeta = tm.FBetaScore(task="multiclass", num_classes=self.config.model.n_classes)
+        self.train_roc_auc = tm.AUROC(task="multiclass", num_classes=self.config.model.n_classes)
+        self.valid_roc_auc = tm.AUROC(task="multiclass", num_classes=self.config.model.n_classes)
+        self.train_fdr = FalseDiscoveryRate(task="multiclass", num_classes=self.config.model.n_classes)
+        self.valid_fdr = FalseDiscoveryRate(task="multiclass", num_classes=self.config.model.n_classes)
 
         self.block1 = nn.Sequential(
             nn.Conv2d(
@@ -85,9 +72,7 @@ class MyConvNet(LightningModule):
             // 2
         )  # AvgPool2d(2)
 
-        self.lin1 = nn.Linear(
-            in_features=16 * block2_out_size * block2_out_size, out_features=100
-        )
+        self.lin1 = nn.Linear(in_features=16 * block2_out_size * block2_out_size, out_features=100)
         self.act1 = nn.LeakyReLU()
         self.drop1 = nn.Dropout(p=self.config.training.dropout)
         self.lin2 = nn.Linear(100, self.config.model.n_classes)

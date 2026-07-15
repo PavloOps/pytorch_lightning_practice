@@ -13,15 +13,11 @@ class FalseDiscoveryRate(Metric):
 
     allowed_tasks = ("binary", "multiclass", "multilabel")
 
-    def __init__(
-        self, num_classes: int, task: str = "multiclass", reduction: str = "macro"
-    ):
+    def __init__(self, num_classes: int, task: str = "multiclass", reduction: str = "macro"):
         super().__init__()
 
         if task not in self.allowed_tasks:
-            raise NotImplementedError(
-                f"Unsupported task '{task}'. Supported: {self.allowed_tasks}"
-            )
+            raise NotImplementedError(f"Unsupported task '{task}'. Supported: {self.allowed_tasks}")
         if reduction not in ("macro", "micro", "none"):
             raise ValueError("Reduction must be one of: 'macro', 'micro', or 'none'.")
 
@@ -29,12 +25,8 @@ class FalseDiscoveryRate(Metric):
         self.num_classes = num_classes
         self.reduction = reduction
 
-        self.add_state(
-            "false_positives", default=torch.zeros(num_classes), dist_reduce_fx="sum"
-        )
-        self.add_state(
-            "true_positives", default=torch.zeros(num_classes), dist_reduce_fx="sum"
-        )
+        self.add_state("false_positives", default=torch.zeros(num_classes), dist_reduce_fx="sum")
+        self.add_state("true_positives", default=torch.zeros(num_classes), dist_reduce_fx="sum")
 
     def update(self, preds: torch.Tensor, target: torch.Tensor):
         if preds.ndim == 2:
