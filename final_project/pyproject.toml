@@ -1,0 +1,9 @@
+[project]
+name = "food101-classification"
+version = "0.1.0"
+description = "Food-101 image classification with PyTorch Lightning, ClearML and ConvNeXt-Tiny."
+requires-python = ">=3.10"
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]

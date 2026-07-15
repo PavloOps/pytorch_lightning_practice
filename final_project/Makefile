@@ -18,16 +18,16 @@ help:
 	@echo "  make lint         Run flake8"
 
 install:
-	$(PYTHON) -m pip install -r requirements.txt
+	$(PYTHON) -m pip install -r ../requirements.txt
 
 train-smoke:
-	$(PYTHON) src/modeling/train.py --data_dir $(DATA_DIR) --lr $(LR) --weights_path $(WEIGHTS_PATH) --onnx_path $(ONNX_PATH) --fast_dev_run
+	$(PYTHON) src/modeling/train_pipeline.py --data_dir $(DATA_DIR) --lr $(LR) --weights_path $(WEIGHTS_PATH) --onnx_path $(ONNX_PATH) --fast_dev_run
 
 train:
-	$(PYTHON) src/modeling/train.py --data_dir $(DATA_DIR) --lr $(LR) --weights_path $(WEIGHTS_PATH) --onnx_path $(ONNX_PATH)
+	$(PYTHON) src/modeling/train_pipeline.py --data_dir $(DATA_DIR) --lr $(LR) --weights_path $(WEIGHTS_PATH) --onnx_path $(ONNX_PATH)
 
 visualize-network:
-	$(PYTHON) src/modeling/train.py --data_dir $(DATA_DIR) --lr $(LR) --weights_path $(WEIGHTS_PATH) --visualize_network
+	$(PYTHON) src/modeling/train_pipeline.py --data_dir $(DATA_DIR) --lr $(LR) --weights_path $(WEIGHTS_PATH) --visualize_network
 
 predict:
 	$(PYTHON) src/modeling/predict.py --weights_path $(WEIGHTS_PATH) --data_dir $(IMAGE_DIR) --predictions_path $(PREDICTIONS_PATH)

@@ -69,19 +69,28 @@ class Food101ConvNeXt(LightningModule):
         targets = batch["label"]
         logits = self(images)
         loss = self.criterion(logits, targets)
+        batch_size = targets.shape[0]
 
         metrics = {f"{step}/loss": loss}
 
         if step == "train":
             self.train_accuracy.update(logits, targets)
             self.train_macro_f1.update(logits, targets)
-            self.log("train/loss", loss, prog_bar=True, on_step=True, on_epoch=True)
+            self.log(
+                "train/loss",
+                loss,
+                prog_bar=True,
+                on_step=True,
+                on_epoch=True,
+                batch_size=batch_size,
+            )
             self.log(
                 "train/accuracy",
                 self.train_accuracy,
                 prog_bar=True,
                 on_step=True,
                 on_epoch=False,
+                batch_size=batch_size,
             )
             self.log(
                 "train/macro_f1",
@@ -89,19 +98,28 @@ class Food101ConvNeXt(LightningModule):
                 prog_bar=True,
                 on_step=True,
                 on_epoch=False,
+                batch_size=batch_size,
             )
 
         elif step == "val":
             self.val_accuracy.update(logits, targets)
             self.val_macro_f1.update(logits, targets)
             self.val_top5_accuracy.update(logits, targets)
-            self.log("val/loss", loss, prog_bar=True, on_step=False, on_epoch=True)
+            self.log(
+                "val/loss",
+                loss,
+                prog_bar=True,
+                on_step=False,
+                on_epoch=True,
+                batch_size=batch_size,
+            )
             self.log(
                 "val/accuracy",
                 self.val_accuracy,
                 prog_bar=True,
                 on_step=False,
                 on_epoch=True,
+                batch_size=batch_size,
             )
             self.log(
                 "val/macro_f1",
@@ -109,6 +127,7 @@ class Food101ConvNeXt(LightningModule):
                 prog_bar=True,
                 on_step=False,
                 on_epoch=True,
+                batch_size=batch_size,
             )
             self.log(
                 "val/top5_accuracy",
@@ -116,19 +135,28 @@ class Food101ConvNeXt(LightningModule):
                 prog_bar=False,
                 on_step=False,
                 on_epoch=True,
+                batch_size=batch_size,
             )
 
         elif step == "test":
             self.test_accuracy.update(logits, targets)
             self.test_macro_f1.update(logits, targets)
             self.test_top5_accuracy.update(logits, targets)
-            self.log("test/loss", loss, prog_bar=True, on_step=False, on_epoch=True)
+            self.log(
+                "test/loss",
+                loss,
+                prog_bar=True,
+                on_step=False,
+                on_epoch=True,
+                batch_size=batch_size,
+            )
             self.log(
                 "test/accuracy",
                 self.test_accuracy,
                 prog_bar=True,
                 on_step=False,
                 on_epoch=True,
+                batch_size=batch_size,
             )
             self.log(
                 "test/macro_f1",
@@ -136,6 +164,7 @@ class Food101ConvNeXt(LightningModule):
                 prog_bar=True,
                 on_step=False,
                 on_epoch=True,
+                batch_size=batch_size,
             )
             self.log(
                 "test/top5_accuracy",
@@ -143,6 +172,7 @@ class Food101ConvNeXt(LightningModule):
                 prog_bar=False,
                 on_step=False,
                 on_epoch=True,
+                batch_size=batch_size,
             )
 
         return metrics

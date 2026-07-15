@@ -9,8 +9,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 @dataclass
 class GeneralConfig:
     seed: int = 2026
-    project_name: str = "Food-101 Classification"
-    experiment_name: str = "ConvNeXt-Tiny fine-tuning"
+    project_name: str = "Машинное обучение с помощью ClearML и Pytorch Lighting"
+    experiment_name: str = "Final Project"
+    tags: tuple[str, ...] = ("CV", "Food101", "ConvNeXT")
 
 
 @dataclass
@@ -117,6 +118,7 @@ class TrainerConfig:
     precision: str = "32-true"
     log_every_n_steps: int = 10
     check_val_every_n_epoch: int = 1
+    progress_bar_refresh_rate: int = 10
 
 
 @dataclass
