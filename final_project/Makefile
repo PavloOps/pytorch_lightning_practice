@@ -5,7 +5,7 @@ DATA_DIR ?= ./data/raw
 WEIGHTS_PATH ?= ./models/convnext_food101.ckpt
 ONNX_PATH ?= ./models/convnext_food101.onnx
 PREDICTIONS_PATH ?= ./data/predictions/results.csv
-IMAGE_DIR ?= ./data/raw/food-101/images
+IMAGE_DIR ?= ./data/samples
 LR ?= 0.0003
 
 help:
