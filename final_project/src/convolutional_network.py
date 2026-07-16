@@ -130,6 +130,14 @@ class Food101ConvNeXt(LightningModule):
                 batch_size=batch_size,
             )
             self.log(
+                "val_macro_f1",
+                self.val_macro_f1,
+                prog_bar=False,
+                on_step=False,
+                on_epoch=True,
+                batch_size=batch_size,
+            )
+            self.log(
                 "val/top5_accuracy",
                 self.val_top5_accuracy,
                 prog_bar=False,

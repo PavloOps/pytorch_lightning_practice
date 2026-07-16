@@ -6,6 +6,7 @@ WEIGHTS_PATH ?= ./models/convnext_food101.ckpt
 ONNX_PATH ?= ./models/convnext_food101.onnx
 PREDICTIONS_PATH ?= ./data/predictions/results.csv
 IMAGE_DIR ?= ./data/samples
+HARD_CASES_DIR ?= ./data/samples/hard_cases
 LR ?= 0.0003
 
 help:
@@ -24,7 +25,7 @@ train-smoke:
 	$(PYTHON) src/modeling/train_pipeline.py --data_dir $(DATA_DIR) --lr $(LR) --weights_path $(WEIGHTS_PATH) --onnx_path $(ONNX_PATH) --fast_dev_run
 
 train:
-	$(PYTHON) src/modeling/train_pipeline.py --data_dir $(DATA_DIR) --lr $(LR) --weights_path $(WEIGHTS_PATH) --onnx_path $(ONNX_PATH)
+	$(PYTHON) src/modeling/train_pipeline.py --data_dir $(DATA_DIR) --lr $(LR) --weights_path $(WEIGHTS_PATH) --onnx_path $(ONNX_PATH) --hard_cases_dir $(HARD_CASES_DIR)
 
 visualize-network:
 	$(PYTHON) src/modeling/train_pipeline.py --data_dir $(DATA_DIR) --lr $(LR) --weights_path $(WEIGHTS_PATH) --visualize_network

@@ -18,6 +18,7 @@ sys.path.append(str(SRC_DIR))
 from config import CFG  # noqa: E402
 from convolutional_network import Food101ConvNeXt  # noqa: E402
 from dataset import Food101DataModule  # noqa: E402
+from modeling.error_analysis import Food101ErrorAnalyzer  # noqa: E402
 from modeling.trainer import create_trainer  # noqa: E402
 
 logging.basicConfig(
@@ -104,6 +105,11 @@ class Food101TrainingPipeline:
             logger.info("Start Food-101 training.")
 
         trainer.fit(model=model, datamodule=datamodule)
+        best_model = model if self.fast_dev_run else self.load_best_model(model, trainer)
+
+        if not self.fast_dev_run:
+            logger.info("Start Food-101 validation error analysis.")
+            Food101ErrorAnalyzer(config=self.config, datamodule=datamodule).run(best_model)
 
         if self.fast_dev_run:
             logger.info("Start Food-101 test step for fast development run.")
@@ -121,7 +127,18 @@ class Food101TrainingPipeline:
         logger.info("Final checkpoint is saved to %s.", self.weights_path)
 
         if self.onnx_path is not None:
-            self.export_model_to_onnx(model)
+            self.export_model_to_onnx(best_model)
+
+    def load_best_model(self, model, trainer):
+        best_model_path = trainer.checkpoint_callback.best_model_path
+
+        if not best_model_path:
+            return model
+
+        logger.info("Load best model checkpoint for error analysis: %s.", best_model_path)
+        best_model = Food101ConvNeXt.load_from_checkpoint(best_model_path, config=self.config)
+        best_model.to(model.device)
+        return best_model
 
     def export_model_to_onnx(self, model):
         if self.onnx_path is None:
@@ -155,11 +172,17 @@ class Food101TrainingPipeline:
         logger.info("ONNX model is saved to %s.", onnx_path)
 
 
-def update_config_from_cli(config, data_dir, lr):
+def update_config_from_cli(config, data_dir, lr, hard_cases_dir):
     if data_dir is not None:
         config.data.data_dir = data_dir
     if lr is not None:
         config.training.lr = lr
+    if hard_cases_dir is not None:
+        hard_cases_path = Path(hard_cases_dir)
+        if not hard_cases_path.is_absolute():
+            hard_cases_path = PROJECT_ROOT / hard_cases_path
+        config.data.hard_cases_dir = str(hard_cases_path)
+        config.data.hard_cases_manifest_path = str(hard_cases_path.parent / "hard_cases_manifest.csv")
     return config
 
 
@@ -198,10 +221,16 @@ def update_config_from_cli(config, data_dir, lr):
     is_flag=True,
     help="Save model graph PNG locally without ClearML connection.",
 )
-def cli(data_dir, lr, weights_path, onnx_path, fast_dev_run, visualize_network):
+@click.option(
+    "--hard_cases_dir",
+    type=click.Path(file_okay=False, dir_okay=True),
+    default=None,
+    help="Directory where hard validation samples will be saved for later debug runs.",
+)
+def cli(data_dir, lr, weights_path, onnx_path, fast_dev_run, visualize_network, hard_cases_dir):
     load_dotenv(PROJECT_ROOT / ".env")
 
-    config = update_config_from_cli(CFG(), data_dir, lr)
+    config = update_config_from_cli(CFG(), data_dir, lr, hard_cases_dir)
     seed_everything(config.general.seed)
 
     pipeline = Food101TrainingPipeline(

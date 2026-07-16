@@ -1,4 +1,7 @@
+import csv
 import logging
+from collections import defaultdict
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -32,6 +35,10 @@ class ClearMLValidationDebugCallback(Callback):
         if trainer.datamodule is None or trainer.datamodule.val_dataset is None:
             return
 
+        if self.hard_cases_manifest_exists():
+            self.log_hard_case_groups(trainer, pl_module)
+            return
+
         batch = self.get_validation_batch(trainer)
         self.log_debug_batch(batch, trainer, pl_module)
 
@@ -43,6 +50,73 @@ class ClearMLValidationDebugCallback(Callback):
         dataloaders = trainer.val_dataloaders
         dataloader = dataloaders[0] if isinstance(dataloaders, list) else dataloaders
         return next(iter(dataloader))
+
+    def hard_cases_manifest_exists(self):
+        return Path(self.config.data.hard_cases_manifest_path).is_file()
+
+    def log_hard_case_groups(self, trainer, pl_module):
+        rows_by_group = self.read_hard_cases_manifest()
+        class_names = self.get_class_names(trainer)
+        class_to_idx = getattr(trainer.datamodule, "class_to_idx", None)
+
+        if not class_names or class_to_idx is None:
+            logger.warning("Hard cases debug skipped: class names are not available.")
+            return
+
+        logged_groups = 0
+        for group_name, rows in rows_by_group.items():
+            rows = rows[: self.config.training.hard_case_samples_per_pair]
+            images = []
+            labels = []
+
+            for row in rows:
+                image_path = Path(row["sample_path"])
+                if not image_path.is_file():
+                    logger.warning("Hard case image is not found: %s.", image_path)
+                    continue
+
+                image = Image.open(image_path).convert("RGB")
+                images.append(trainer.datamodule.eval_transform(image))
+                labels.append(class_to_idx[row["true_class"]])
+
+            if not images:
+                continue
+
+            images = torch.stack(images).to(pl_module.device)
+            labels = torch.tensor(labels, device=pl_module.device)
+            probabilities, predictions, gradcams = self.get_predictions_and_gradcams(pl_module, images)
+            debug_images = []
+
+            for image_idx in range(images.shape[0]):
+                debug_images.append(
+                    self.build_debug_image(
+                        image=images[image_idx],
+                        gradcam=gradcams[image_idx],
+                        probabilities=probabilities[image_idx],
+                        prediction=predictions[image_idx],
+                        label=labels[image_idx].cpu(),
+                        class_names=class_names,
+                    )
+                )
+
+            self.task_logger.report_image(
+                title="Debug/Hard Confusions Grad-CAM",
+                series=group_name,
+                iteration=pl_module.current_epoch,
+                image=self.build_debug_grid(debug_images),
+            )
+            logged_groups += 1
+
+        logger.info("Logged %s hard validation debug groups to ClearML.", logged_groups)
+
+    def read_hard_cases_manifest(self):
+        rows_by_group = defaultdict(list)
+
+        with open(self.config.data.hard_cases_manifest_path, newline="", encoding="utf-8") as manifest_file:
+            for row in csv.DictReader(manifest_file):
+                rows_by_group[row["group_name"]].append(row)
+
+        return dict(list(rows_by_group.items())[: self.config.training.hard_confusion_pairs])
 
     def log_debug_batch(self, batch, trainer, pl_module):
         images = batch["image"][: self.config.training.num_debug_samples].to(pl_module.device)
@@ -186,7 +260,8 @@ class ClearMLValidationDebugCallback(Callback):
 
     def build_text_panel(self, probabilities, prediction, label, class_names, height):
         panel_width = 360
-        panel = Image.new("RGB", (panel_width, height), color=(255, 255, 255))
+        background_color = (229, 245, 232) if prediction.item() == label.item() else (255, 237, 213)
+        panel = Image.new("RGB", (panel_width, height), color=background_color)
         draw = ImageDraw.Draw(panel)
 
         true_class = self.get_class_name(class_names, label.item())
@@ -219,6 +294,24 @@ class ClearMLValidationDebugCallback(Callback):
             y += 22
 
         return panel
+
+    @staticmethod
+    def build_debug_grid(images):
+        if len(images) == 1:
+            return images[0]
+
+        columns = 2
+        rows = int(np.ceil(len(images) / columns))
+        cell_width = max(image.width for image in images)
+        cell_height = max(image.height for image in images)
+        grid = Image.new("RGB", (columns * cell_width, rows * cell_height), color=(255, 255, 255))
+
+        for image_idx, image in enumerate(images):
+            row_idx = image_idx // columns
+            column_idx = image_idx % columns
+            grid.paste(image, (column_idx * cell_width, row_idx * cell_height))
+
+        return grid
 
     @staticmethod
     def get_class_names(trainer):

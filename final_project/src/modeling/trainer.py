@@ -25,6 +25,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def keep_learning_rate_constant(epoch: int) -> float:
+    return 1.0
+
+
 class ClearMLTaskLogger(Logger):
     def __init__(self, task):
         super().__init__()
@@ -121,7 +125,8 @@ def create_callbacks(config: CFG, checkpoint_dir, clearml_logger, fast_dev_run=F
             BackboneFinetuning(
                 unfreeze_backbone_at_epoch=config.model.unfreeze_backbone_epoch,
                 backbone_initial_lr=config.training.backbone_lr,
-                should_align=False,
+                lambda_func=keep_learning_rate_constant,
+                should_align=True,
                 train_bn=True,
                 verbose=True,
             )

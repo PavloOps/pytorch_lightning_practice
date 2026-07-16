@@ -19,7 +19,10 @@ class DataConfig:
     data_dir: str = str(PROJECT_ROOT / "data" / "raw")
     external_dir: str = str(PROJECT_ROOT / "data" / "external")
     samples_dir: str = str(PROJECT_ROOT / "data" / "samples")
+    hard_cases_dir: str = str(PROJECT_ROOT / "data" / "samples" / "hard_cases")
+    hard_cases_manifest_path: str = str(PROJECT_ROOT / "data" / "samples" / "hard_cases_manifest.csv")
     figures_dir: str = str(PROJECT_ROOT / "reports" / "figures")
+    confusion_matrix_path: str = str(PROJECT_ROOT / "reports" / "figures" / "food101_confusion_matrix.png")
     download: bool = True
     archive_url: str = "http://data.vision.ee.ethz.ch/cvl/food-101.tar.gz"
     archive_name: str = "food-101.tar.gz"
@@ -100,7 +103,7 @@ class TrainingConfig:
     backbone_lr: float = 3e-5
     weight_decay: float = 1e-4
     label_smoothing: float = 0.1
-    monitor_metric: str = "val/macro_f1"
+    monitor_metric: str = "val_macro_f1"
     monitor_mode: str = "max"
     early_stopping_patience: int = 3
     save_top_k: int = 3
@@ -108,6 +111,8 @@ class TrainingConfig:
     num_debug_samples: int = 4
     debug_top_k: int = 5
     gradcam_alpha: float = 0.45
+    hard_confusion_pairs: int = 8
+    hard_case_samples_per_pair: int = 4
 
 
 @dataclass
