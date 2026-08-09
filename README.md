@@ -473,9 +473,27 @@ python src/modeling/train.py \
 | `make lint` | Run `flake8` checks. |
 
 
+### Model Weights
+
+Финальные веса модели не хранятся в git, потому что checkpoint весит больше 100 MB. Он опубликован как asset в GitHub Release:
+
+* https://github.com/PavloOps/pytorch_lightning_practice/releases/tag/v1.0-food101
+
+Скачать checkpoint можно так:
+
+```bash
+mkdir -p final_project/models
+
+curl -L \
+  -o final_project/models/last-v2.ckpt \
+  https://github.com/PavloOps/pytorch_lightning_practice/releases/download/v1.0-food101/last-v2.ckpt
+```
+
+После этого можно запускать `make predict WEIGHTS_PATH=./models/last-v2.ckpt` или использовать checkpoint в `predict.py`.
+
 Основные артефакты после запуска:
 
-* models/convnext_food101.ckpt
+* models/last-v2.ckpt
 * models/convnext_food101.onnx
 * reports/figures/food101_confusion_matrix.png
 * data/samples/hard_cases/
