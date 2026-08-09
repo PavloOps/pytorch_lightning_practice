@@ -94,6 +94,10 @@ class Food101TrainingPipeline:
     def run_training(self):
         self.weights_path.parent.mkdir(parents=True, exist_ok=True)
 
+        if self.fast_dev_run:
+            self.config.data.num_workers = 0
+            self.config.data.persistent_workers = False
+
         datamodule = Food101DataModule(config=self.config)
         model = Food101ConvNeXt(config=self.config)
         trainer = create_trainer(
@@ -295,7 +299,9 @@ def cli(data_dir, lr, weights_path, onnx_path, fast_dev_run, visualize_network, 
         pipeline.visualize_network()
         return
 
-    setup_clearml_environment()
+    if not fast_dev_run:
+        setup_clearml_environment()
+
     pipeline.run_training()
 
 

@@ -1,5 +1,6 @@
 /.idea
 /.venv
+.cache/
 __pycache__/
 *.pyc
 /lab_4_gan/src/data/

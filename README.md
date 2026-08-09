@@ -333,32 +333,109 @@ CLEARML_API_ACCESS_KEY=...
 CLEARML_API_SECRET_KEY=...
 ```
 
-### Docker Run
+### Docker: запуск на машине с NVIDIA GPU
 
-Build image from the repository root:
+Полное обучение в Docker требует NVIDIA GPU, рабочего NVIDIA-драйвера на хосте и настроенного NVIDIA Container Toolkit для Docker.
+
+1. Проверить, что хост видит видеокарту:
+
+```bash
+nvidia-smi
+```
+
+Команда должна вывести информацию о GPU. Если она падает, сначала нужно исправить NVIDIA-драйвер на хосте.
+
+2. Проверить, что Docker умеет пробрасывать GPU в контейнер:
+
+```bash
+docker run --rm --gpus all nvidia/cuda:12.6.3-base-ubuntu24.04 nvidia-smi
+```
+
+Если команда выводит информацию о GPU, Docker готов к GPU-обучению.
+
+Если команда падает с ошибкой вроде:
+
+```text
+failed to discover GPU vendor from CDI: no known GPU vendor found
+```
+
+нужно установить и настроить NVIDIA Container Toolkit:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y --no-install-recommends ca-certificates curl gnupg2
+
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey \
+  | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+
+curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list \
+  | sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' \
+  | sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+sudo apt-get update
+sudo apt-get install -y nvidia-container-toolkit
+
+sudo nvidia-ctk runtime configure --runtime=docker
+sudo systemctl restart docker
+```
+
+После этого нужно снова проверить GPU внутри Docker:
+
+```bash
+docker run --rm --gpus all nvidia/cuda:12.6.3-base-ubuntu24.04 nvidia-smi
+```
+
+Если Docker всё ещё сообщает CDI-ошибку, можно вручную сгенерировать CDI specification:
+
+```bash
+sudo mkdir -p /etc/cdi
+sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
+nvidia-ctk cdi list
+sudo systemctl restart docker
+```
+
+И ещё раз проверить:
+
+```bash
+docker run --rm --gpus all nvidia/cuda:12.6.3-base-ubuntu24.04 nvidia-smi
+```
+
+3. Собрать Docker-образ из корня репозитория:
 
 ```bash
 docker build -t food101-convnext .
 ```
 
-Run a quick smoke check:
+4. Запустить smoke-check без ClearML. Первый запуск скачивает pretrained ConvNeXt weights; `-it` оставляет видимым progress bar скачивания, а примонтированный torch cache сохраняет веса между запусками контейнера:
 
 ```bash
-docker run --rm \
-  --env-file final_project/.env \
+docker run --rm -it --shm-size=2g \
   -v "$(pwd)/final_project/data:/app/final_project/data" \
   -v "$(pwd)/final_project/models:/app/final_project/models" \
+  -v "$(pwd)/.cache/torch:/root/.cache/torch" \
   food101-convnext make train-smoke
 ```
 
-Run full GPU training:
+5. Перед полным обучением создать `final_project/.env` из `.env.example` и заполнить ClearML credentials:
 
 ```bash
-docker run --rm --gpus all \
+cp final_project/.env.example final_project/.env
+```
+
+```text
+CLEARML_API_ACCESS_KEY=...
+CLEARML_API_SECRET_KEY=...
+```
+
+6. Запустить полное GPU-обучение:
+
+```bash
+docker run --rm -it --gpus all --shm-size=8g \
   --env-file final_project/.env \
   -v "$(pwd)/final_project/data:/app/final_project/data" \
   -v "$(pwd)/final_project/models:/app/final_project/models" \
   -v "$(pwd)/final_project/reports:/app/final_project/reports" \
+  -v "$(pwd)/.cache/torch:/root/.cache/torch" \
   food101-convnext make train
 ```
 

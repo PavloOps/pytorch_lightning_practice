@@ -109,16 +109,18 @@ def create_callbacks(config: CFG, checkpoint_dir, clearml_logger, fast_dev_run=F
             ]
         )
 
-    callbacks.extend(
-        [
-            LearningRateMonitor(logging_interval="epoch"),
-            TQDMProgressBar(refresh_rate=config.trainer.progress_bar_refresh_rate),
-            ClearMLValidationDebugCallback(
-                config=config,
-                clearml_logger=clearml_logger,
-            ),
-        ]
-    )
+    callbacks.append(TQDMProgressBar(refresh_rate=config.trainer.progress_bar_refresh_rate))
+
+    if clearml_logger is not None:
+        callbacks.extend(
+            [
+                LearningRateMonitor(logging_interval="epoch"),
+                ClearMLValidationDebugCallback(
+                    config=config,
+                    clearml_logger=clearml_logger,
+                ),
+            ]
+        )
 
     if not fast_dev_run and config.model.freeze_backbone and config.model.unfreeze_backbone_epoch is not None:
         callbacks.append(
@@ -142,6 +144,15 @@ def create_trainer(config: CFG, checkpoint_dir, fast_dev_run=False):
 
     if torch.cuda.is_available():
         trainer_params["precision"] = "32-true"
+
+    if fast_dev_run:
+        return Trainer(
+            **trainer_params,
+            fast_dev_run=fast_dev_run,
+            logger=False,
+            enable_checkpointing=False,
+            callbacks=create_callbacks(config, checkpoint_dir, None, fast_dev_run),
+        )
 
     clearml_task = Task.init(
         project_name=config.general.project_name,
