@@ -106,7 +106,7 @@ class TrainingConfig:
     monitor_metric: str = "val_macro_f1"
     monitor_mode: str = "max"
     early_stopping_patience: int = 3
-    save_top_k: int = 3
+    save_top_k: int = 1
     debug_samples_epoch: int = 1
     num_debug_samples: int = 4
     debug_top_k: int = 5

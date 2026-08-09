@@ -258,3 +258,185 @@ olgal@DESKTOP-CH6JPSI MINGW64 ~/PycharmProjects/pytorch_lightning_practice/lab_4
 ![img_4.png](lab_4_gan/generated_samples/img_4.png)<br>
 ![img_5.png](lab_4_gan/generated_samples/img_5.png)<br>
 ![img_6.png](lab_4_gan/generated_samples/img_6.png)
+
+# [FINAL PROJECT](final_project/Makefile)
+
+## [ClearML Result UI page](https://app.clear.ml/projects/a7f426d19f9f493980c13330e8aa07b6/experiments/6f3b8f5d93854931b11f378d23be7e37/output/execution)
+
+## Project Summary
+
+Цель проекта - обучить классификатор изображений еды на датасете Food-101 и собрать воспроизводимый ML-pipeline вокруг эксперимента: подготовка данных, обучение, логирование, анализ ошибок, экспорт модели и инференс.
+
+Основные технические решения:
+
+* **Model:** ConvNeXt-Tiny с ImageNet-pretrained весами и замененной classifier head на 101 класс Food-101.
+* **Training framework:** PyTorch Lightning для структуры train/validation/test loop, callbacks, checkpointing и метрик.
+* **Experiment tracking:** ClearML для логирования метрик, гиперпараметров, debug samples, Grad-CAM hard cases и лучших весов модели.
+* **Data:** Food-101 загружается автоматически, проверяется по hash и делится на train/validation из официального train split; официальный test split используется только для финальной оценки.
+* **Result:** test accuracy = **0.8766**, test macro F1 = **0.8760**, test top-5 accuracy = **0.9735**.
+
+Фишки проекта: автоматический error analysis, сохранение hard validation cases, Grad-CAM визуализации для сложных классов, экспорт лучшей модели в ONNX и отдельный prediction pipeline для пользовательских изображений.
+
+Future work: дообучить backbone дольше, подобрать augmentations для похожих классов и отдельно поработать с группами ошибок вроде chocolate cake/chocolate mousse и steak/filet mignon.
+
+
+Наконец-то высвободилось немного времени, и я смогла допилить финалку :) Прежде всего, хочу отметить то,
+насколько изменился подход к обучению сетки. Помните, я вначале упоминала ноутбук, который сдавала в Вышке 
+в качестве курсача по предмету "Введение в глубокое обучение"? Да-да, я нашла его, представляете :) [Вот он, мой старичок "ДО"](final_project/notebooks/DL_final_project_Pavlova.ipynb).
+В то время я была очень собой довольна, что одолела его (кстати, это только половина ноутбука, вторая половина была по НЛП, но я её по этическим некоторым соображениям вырезала).
+Так вот, конечно, разница очевидна. И мне нравится то, что тогда я смогла разобраться, как под капотом работает вся обучающая часть, а сейчас - не фиксироваться уже на этих нюансах, а отдать на откуп ClearML & PytorchLightning, больше
+сфокусироваться самом процессе тюнинга. К слову, вышло ОЧЕНЬ удобно и интересно. ГОРАЗДО лучше, чем было. 
+Гештальт с [датасетом Food101](final_project/references/bossard_eccv14_food-101.pdf) закрыт :)
+
+P.S. В 2024 году VIT-модель набрала на тесте 90% точности, а RESNET-50 70% точности.
+Для конволюшки посовременее результат очень даже порадовал:
+
+<img src="final_project/reports/figures/metrics.png" alt="результат" width="450">
+
+> В качестве backbone использовалась архитектура ConvNeXt-Tiny, предложенная
+  Liu et al. в работе [“A ConvNet for the 2020s” (CVPR 2022)](https://openaccess.thecvf.com/content/CVPR2022/html/Liu_A_ConvNet_for_the_2020s_CVPR_2022_paper.html). Авторы показывают,
+  что модернизированная сверточная архитектура может конкурировать с vision
+  transformers, сохраняя простоту и эффективность классических ConvNet-подходов.
+
+
+P.S.S. Не вышло развести шоколадные пироги и шоколадные муссы :) а также стейки и филе-миньон, но это уже future work. Тепловая карта показывает, какие части изображения триггерили модель на выбор класса, прикольно, да?
+
+  ![cake & mousse](final_project/reports/figures/cake_mousse.png)
+
+  ![filet & steak](final_project/reports/figures/filet_steak.png)
+
+## How to Start
+
+Обучаем ConvNeXt-Tiny на Food-101 с помощью PyTorch Lightning и логируем эксперимент в ClearML.
+
+### Requirements
+
+* Python 3.13
+* CUDA-compatible GPU is recommended for full training
+* ClearML account and API credentials
+* At least 10 GB of free disk space for Food-101, checkpoints and exported artifacts
+
+### Environment Setup
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp final_project/.env.example final_project/.env
+```
+
+Fill ClearML credentials in `final_project/.env`:
+
+```text
+CLEARML_API_ACCESS_KEY=...
+CLEARML_API_SECRET_KEY=...
+```
+
+### Training Run
+
+```bash
+source .venv/bin/activate
+cd final_project
+make train
+```
+make train запускает полный pipeline: загрузку данных, обучение, валидацию,
+тестирование, анализ ошибок, сохранение hard cases, экспорт модели в ONNX и
+отправку результатов в ClearML.
+
+Полная команда под капотом:
+
+```bash
+python src/modeling/train.py \
+  --data_dir ./data/raw \
+  --lr 0.0003 \
+  --weights_path ./models/convnext_food101.ckpt \
+  --onnx_path ./models/convnext_food101.onnx \
+  --hard_cases_dir ./data/samples/hard_cases
+```
+
+Доступные команды Makefile:
+
+| Command | Description |
+|---|---|
+| `make install` | Install project dependencies. |
+| `make train-smoke` | Run a quick one-batch training check. |
+| `make train` | Run the full training pipeline. |
+| `make visualize-network` | Save the model architecture graph. |
+| `make predict` | Run prediction on sample images. |
+| `make lint` | Run `flake8` checks. |
+
+
+Основные артефакты после запуска:
+
+* models/convnext_food101.ckpt
+* models/convnext_food101.onnx
+* reports/figures/food101_confusion_matrix.png
+* data/samples/hard_cases/
+* data/samples/hard_cases_manifest.csv
+
+Что логируется в ClearML:
+
+* training, validation and test metrics;
+* hyperparameters and full config;
+* validation debug samples with Grad-CAM;
+* hard confusion groups with Grad-CAM;
+* best model checkpoint.
+
+
+## Files' tree
+• ./<br>
+  ├── 📁 final_project/<br>
+  │   ├── 📁 data/<br>
+  │   │   └── 📁 samples/<br>
+  │   │       ├── 📁 hard_cases/<br>
+  │   │       ├── 📄 00_17_cheesecake.png<br>
+  │   │       ├── 📄 01_86_sashimi.png<br>
+  │   │       ├── 📄 02_97_takoyaki.png<br>
+  │   │       ├── 📄 03_28_croque_madame.png<br>
+  │   │       ├── 📄 04_98_tiramisu.png<br>
+  │   │       ├── 📄 05_50_grilled_salmon.png<br>
+  │   │       ├── 📄 06_36_falafel.png<br>
+  │   │       ├── 📄 07_83_red_velvet_cake.png<br>
+  │   │       └── 📄 hard_cases_manifest.csv<br>
+  │   ├── 📁 debug_samples/<br>
+  │   ├── 📁 models/<br>
+  │   │   ├── 📁 convnext_food101/<br>
+  │   │   │   └── 📁 archive/<br>
+  │   │   ├── 📄 convnext_food101.ckpt<br>
+  │   │   ├── 📄 convnext_food101.onnx<br>
+  │   │   ├── 📄 food101-02-0.0000.ckpt<br>
+  │   │   ├── 📄 food101-03-0.0000.ckpt<br>
+  │   │   ├── 📄 food101-04-0.0000.ckpt<br>
+  │   │   ├── 📄 food101-06-0.8271.ckpt<br>
+  │   │   ├── 📄 food101-07-0.8236.ckpt<br>
+  │   │   ├── 📄 food101-09-0.8302.ckpt<br>
+  │   │   ├── 📄 food101-09-0.8302-v1.ckpt<br>
+  │   │   ├── 📄 last.ckpt<br>
+  │   │   ├── 📄 last-v1.ckpt<br>
+  │   │   └── 📄 last-v2.ckpt<br>
+  │   ├── 📁 notebooks/<br>
+  │   │   ├── 📄 DL_final_project_Pavlova.ipynb*<br>
+  │   │   └── 📄 eda.ipynb<br>
+  │   ├── 📁 references/<br>
+  │   │   └── 📄 bossard_eccv14_food-101.pdf<br>
+  │   ├── 📁 reports/<br>
+  │   │   └── 📁 figures/<br>
+  │   │       ├── 📄 convnext_tiny_food101_graph.png<br>
+  │   │       └── 📄 food101_confusion_matrix.png<br>
+  │   ├── 📁 src/<br>
+  │   │   ├── 📁 modeling/<br>
+  │   │   │   ├── 📁 callbacks/<br>
+  │   │   │   ├── 📄 debug_callbacks.py<br>
+  │   │   │   ├── 📄 error_analysis.py<br>
+  │   │   │   ├── 📄 __init__.py<br>
+  │   │   │   ├── 📄 predict.py<br>
+  │   │   │   ├── 📄 trainer.py<br>
+  │   │   │   └── 📄 train.py<br>
+  │   │   ├── 📄 config.py<br>
+  │   │   ├── 📄 convolutional_network.py<br>
+  │   │   ├── 📄 dataset.py<br>
+  │   │   └── 📄 __init__.py<br>
+  │   ├── 📄 final_project_tree.txt<br>
+  │   ├── 📄 Makefile<br>
+  │   ├── 📄 pyproject.toml<br>
+  │   └── 📄 setup.cfg<br>

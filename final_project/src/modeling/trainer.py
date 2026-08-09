@@ -147,6 +147,8 @@ def create_trainer(config: CFG, checkpoint_dir, fast_dev_run=False):
         project_name=config.general.project_name,
         task_name=config.general.experiment_name,
         tags=list(config.general.tags),
+        auto_connect_frameworks=False,
+        reuse_last_task_id=False,
     )
     clearml_logger = ClearMLTaskLogger(clearml_task)
     clearml_logger.log_hyperparams(asdict(config))

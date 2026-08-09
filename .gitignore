@@ -1,5 +1,7 @@
 /.idea
 /.venv
+__pycache__/
+*.pyc
 /lab_4_gan/src/data/
 /data/
 gan*.ckpt

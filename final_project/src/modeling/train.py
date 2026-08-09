@@ -4,9 +4,11 @@ import sys
 import warnings
 from getpass import getpass
 from pathlib import Path
+import shutil
 
 import click
 import torch
+from clearml import OutputModel
 from dotenv import load_dotenv
 from lightning import seed_everything
 from torchview import draw_graph
@@ -18,6 +20,7 @@ sys.path.append(str(SRC_DIR))
 from config import CFG  # noqa: E402
 from convolutional_network import Food101ConvNeXt  # noqa: E402
 from dataset import Food101DataModule  # noqa: E402
+from modeling.debug_callbacks import ClearMLValidationDebugCallback  # noqa: E402
 from modeling.error_analysis import Food101ErrorAnalyzer  # noqa: E402
 from modeling.trainer import create_trainer  # noqa: E402
 
@@ -110,6 +113,7 @@ class Food101TrainingPipeline:
         if not self.fast_dev_run:
             logger.info("Start Food-101 validation error analysis.")
             Food101ErrorAnalyzer(config=self.config, datamodule=datamodule).run(best_model)
+            self.log_hard_cases_to_clearml(trainer, best_model)
 
         if self.fast_dev_run:
             logger.info("Start Food-101 test step for fast development run.")
@@ -123,11 +127,13 @@ class Food101TrainingPipeline:
         )
         logger.info("Test metrics: %s", test_metrics)
 
-        trainer.save_checkpoint(self.weights_path)
-        logger.info("Final checkpoint is saved to %s.", self.weights_path)
+        best_checkpoint_path = self.save_best_checkpoint(trainer)
 
         if self.onnx_path is not None:
             self.export_model_to_onnx(best_model)
+
+        if not self.fast_dev_run:
+            self.upload_best_weights_to_clearml(trainer, best_checkpoint_path)
 
     def load_best_model(self, model, trainer):
         best_model_path = trainer.checkpoint_callback.best_model_path
@@ -139,6 +145,51 @@ class Food101TrainingPipeline:
         best_model = Food101ConvNeXt.load_from_checkpoint(best_model_path, config=self.config)
         best_model.to(model.device)
         return best_model
+
+    def save_best_checkpoint(self, trainer):
+        best_model_path = None if self.fast_dev_run else trainer.checkpoint_callback.best_model_path
+
+        if best_model_path:
+            best_checkpoint_path = Path(best_model_path)
+            shutil.copy2(best_checkpoint_path, self.weights_path)
+            logger.info(
+                "Best checkpoint is copied from %s to %s.",
+                best_checkpoint_path,
+                self.weights_path,
+            )
+            return best_checkpoint_path
+
+        trainer.save_checkpoint(self.weights_path)
+        logger.info("Checkpoint is saved to %s.", self.weights_path)
+        return self.weights_path
+
+    def log_hard_cases_to_clearml(self, trainer, model):
+        if not hasattr(trainer.logger, "task_logger"):
+            logger.warning("Hard cases were not logged to ClearML: task logger is not available.")
+            return
+
+        ClearMLValidationDebugCallback(
+            config=self.config,
+            clearml_logger=trainer.logger,
+        ).log_hard_case_groups(trainer, model)
+
+    def upload_best_weights_to_clearml(self, trainer, best_checkpoint_path):
+        if not hasattr(trainer.logger, "task"):
+            logger.warning("Best weights were not uploaded to ClearML: task is not available.")
+            return
+
+        output_model = OutputModel(
+            task=trainer.logger.task,
+            name="convnext_food101_best",
+            framework="PyTorch",
+        )
+        output_model.update_weights(
+            weights_filename=str(best_checkpoint_path),
+            target_filename="convnext_food101_best.ckpt",
+            auto_delete_file=False,
+            async_enable=False,
+        )
+        logger.info("Uploaded best checkpoint to ClearML: %s.", best_checkpoint_path)
 
     def export_model_to_onnx(self, model):
         if self.onnx_path is None:
