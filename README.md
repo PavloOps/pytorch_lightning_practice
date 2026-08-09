@@ -301,9 +301,9 @@ P.S. В 2024 году VIT-модель набрала на тесте 90% точ
 
 P.S.S. Не вышло развести шоколадные пироги и шоколадные муссы :) а также стейки и филе-миньон, но это уже future work. Тепловая карта показывает, какие части изображения триггерили модель на выбор класса, прикольно, да?
 
-  ![cake & mousse](final_project/reports/figures/cake_mousse.png)
+<img src="final_project/reports/figures/cake_mousse.png" alt="cake & mousse" width="600">
 
-  ![filet & steak](final_project/reports/figures/filet_steak.png)
+<img src="final_project/reports/figures/filet_steak.png" alt="filet & steak" width="600">
 
 ## How to Start
 
@@ -315,6 +315,7 @@ P.S.S. Не вышло развести шоколадные пироги и ш�
 * CUDA-compatible GPU is recommended for full training
 * ClearML account and API credentials
 * At least 10 GB of free disk space for Food-101, checkpoints and exported artifacts
+* Docker with NVIDIA Container Toolkit for containerized GPU training
 
 ### Environment Setup
 
@@ -330,6 +331,35 @@ Fill ClearML credentials in `final_project/.env`:
 ```text
 CLEARML_API_ACCESS_KEY=...
 CLEARML_API_SECRET_KEY=...
+```
+
+### Docker Run
+
+Build image from the repository root:
+
+```bash
+docker build -t food101-convnext .
+```
+
+Run a quick smoke check:
+
+```bash
+docker run --rm \
+  --env-file final_project/.env \
+  -v "$(pwd)/final_project/data:/app/final_project/data" \
+  -v "$(pwd)/final_project/models:/app/final_project/models" \
+  food101-convnext make train-smoke
+```
+
+Run full GPU training:
+
+```bash
+docker run --rm --gpus all \
+  --env-file final_project/.env \
+  -v "$(pwd)/final_project/data:/app/final_project/data" \
+  -v "$(pwd)/final_project/models:/app/final_project/models" \
+  -v "$(pwd)/final_project/reports:/app/final_project/reports" \
+  food101-convnext make train
 ```
 
 ### Training Run
